@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import type { Language } from "@/lib/types"
 
 const LANG_CODE: Record<string, string> = {
@@ -36,10 +36,16 @@ export function useSpeechRecognition({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const transcriptRef = useRef("")
+  // Keep callbacks in refs so onend always has the latest version
+  const onResultRef = useRef(onResult)
+  const onErrorRef = useRef(onError)
+
+  useEffect(() => { onResultRef.current = onResult }, [onResult])
+  useEffect(() => { onErrorRef.current = onError }, [onError])
 
   const startRecording = useCallback(() => {
     if (!isSupported) {
-      onError?.("Speech recognition requires Chrome or Edge.")
+      onErrorRef.current?.("Speech recognition requires Chrome or Edge.")
       return
     }
 
@@ -67,33 +73,33 @@ export function useSpeechRecognition({
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
-      if (event.error !== "aborted") {
-        onError?.(event.error === "no-speech" ? "No speech detected. Try again." : "Microphone error.")
+      if (event.error !== "aborted" && event.error !== "no-speech") {
+        onErrorRef.current?.("Microphone error. Please try again.")
       }
       setIsRecording(false)
     }
 
+    // onend fires AFTER all onresult events — safe to read the full transcript here
     recognition.onend = () => {
       setIsRecording(false)
+      const result = transcriptRef.current.trim()
+      transcriptRef.current = ""
+      if (result) {
+        onResultRef.current(result)
+      }
     }
 
     recognitionRef.current = recognition
     recognition.start()
     setIsRecording(true)
-  }, [isSupported, language, region, onError])
+  }, [isSupported, language, region])
 
   const stopRecording = useCallback(() => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop()
+      recognitionRef.current.stop() // triggers onend, which fires onResult
       recognitionRef.current = null
     }
-    setIsRecording(false)
-    const result = transcriptRef.current.trim()
-    if (result) {
-      onResult(result)
-    }
-    transcriptRef.current = ""
-  }, [onResult])
+  }, [])
 
   const toggleRecording = useCallback(() => {
     if (isRecording) {
