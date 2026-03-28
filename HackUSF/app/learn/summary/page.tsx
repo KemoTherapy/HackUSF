@@ -7,9 +7,10 @@ import { Sparkles, Target, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { StarRating } from "@/components/ui/star-rating"
 import { AnalysisSummary } from "@/components/analysis/analysis-summary"
-import { TranscriptView } from "@/components/analysis/transcript-view"
 import { FeedbackCategory } from "@/components/analysis/feedback-category"
+import { ConversationTranscript } from "@/components/conversation/ConversationTranscript"
 import { useStore } from "@/lib/store"
+import { REGIONS } from "@/lib/constants"
 import type { AnalysisReport, Correction } from "@/lib/types"
 
 // Mock analysis for demo purposes
@@ -52,9 +53,10 @@ function SummaryContent() {
   const sessionId = searchParams.get("sessionId")
   const { session, isHydrated } = useStore()
 
-  // Find the practice session or use mock data
   const practiceSession = session.sessions.find((s) => s.id === sessionId)
   const analysis = practiceSession?.analysis || mockAnalysis
+  const transcript = practiceSession?.transcript || []
+  const regionData = REGIONS.find((r) => r.id === practiceSession?.region)
 
   // Group corrections by type
   const grammarCorrections = analysis.corrections.filter((c: Correction) => c.type === "grammar")
@@ -111,10 +113,13 @@ function SummaryContent() {
           <AnalysisSummary analysis={analysis} />
 
           {/* Transcript */}
-          <TranscriptView
-            original="Hola, buenas tardes. Yo quiero un mesa para dos, por favor. También me gustaría ver el menú para comer aqui."
-            corrections={analysis.corrections}
-          />
+          {transcript.length > 0 && (
+            <ConversationTranscript
+              turns={transcript}
+              corrections={analysis.corrections}
+              flag={regionData?.flag}
+            />
+          )}
 
           {/* Feedback by category */}
           <div className="space-y-4">
