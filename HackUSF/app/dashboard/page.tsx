@@ -55,7 +55,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell showBackButton backHref="/">
       <div className="max-w-[1200px] mx-auto px-6 py-8 md:px-12 pb-32">
         <PageHeader
           title="Your Progress"

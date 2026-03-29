@@ -35,9 +35,6 @@ export function ScenarioCard({
         "hover:bg-background-elevated",
       )}
     >
-      {/* Icon */}
-      <span className="text-4xl mb-4 block">{scenario.icon}</span>
-
       {/* Title */}
       <h3 className="text-lg font-semibold text-foreground mb-2">{scenario.name}</h3>
 

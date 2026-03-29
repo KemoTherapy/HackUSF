@@ -6,6 +6,7 @@ export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
 
 export type Scenario =
   | "restaurant" | "directions" | "coffee_shop" | "hotel"           // A1+
+  | "physician" | "soldier" | "emergency_help"                      // A1+ (new)
   | "job_interview" | "doctor"                                       // B2+
   | "apartment" | "negotiation"                                      // C1+
   | "debate" | "storytelling"                                        // C2

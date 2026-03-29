@@ -134,6 +134,7 @@ export async function getWritingExercises(params: {
   language: Language
   region: Region
   cefrLevel: CefrLevel
+  topic?: string
 }): Promise<WritingExercise[]> {
   const response = await fetch("/api/exercises", {
     method: "POST",
@@ -168,16 +169,19 @@ function getOpeningPrompt(language: Language, scenario: Scenario): string {
   // We send a user "start" message to trigger the AI's opening line in character
   const isFrench = language === "french"
   const prompts: Record<Scenario, string> = {
-    restaurant:   isFrench ? "Bonjour, je voudrais une table." : "Hola, buenas tardes.",
-    directions:   isFrench ? "Excusez-moi." : "Disculpe.",
-    coffee_shop:  isFrench ? "Bonjour." : "Buenos días.",
-    hotel:        isFrench ? "Bonjour, j'ai une réservation." : "Buenas tardes, tengo una reservación.",
-    job_interview:isFrench ? "Bonjour, je suis ici pour l'entretien." : "Buenos días, vengo para la entrevista.",
-    doctor:       isFrench ? "Bonjour, j'ai rendez-vous." : "Buenos días, tengo una cita.",
-    apartment:    isFrench ? "Bonjour, je viens voir l'appartement." : "Hola, vengo a ver el apartamento.",
-    negotiation:  isFrench ? "Bonjour, j'ai un problème avec un achat récent." : "Hola, tengo un problema con una compra reciente.",
-    debate:       isFrench ? "Bonjour, je voudrais discuter d'un sujet qui m'intéresse." : "Hola, me gustaría hablar sobre algo que me parece interesante.",
-    storytelling: isFrench ? "Bonjour, je voulais vous raconter quelque chose qui m'est arrivé." : "Hola, quería contarte algo que me pasó.",
+    restaurant:    isFrench ? "Bonjour, je voudrais une table." : "Hola, buenas tardes.",
+    directions:    isFrench ? "Excusez-moi." : "Disculpe.",
+    coffee_shop:   isFrench ? "Bonjour." : "Buenos días.",
+    hotel:         isFrench ? "Bonjour, j'ai une réservation." : "Buenas tardes, tengo una reservación.",
+    physician:     isFrench ? "Bonjour docteur, j'ai un rendez-vous." : "Buenos días, doctor. Tengo una cita.",
+    soldier:       isFrench ? "Soldat, j'ai besoin d'un rapport de situation." : "Soldado, necesito un informe de la situación.",
+    emergency_help:isFrench ? "Excusez-moi, j'ai besoin d'aide s'il vous plaît." : "Disculpe, necesito ayuda, por favor.",
+    job_interview: isFrench ? "Bonjour, je suis ici pour l'entretien." : "Buenos días, vengo para la entrevista.",
+    doctor:        isFrench ? "Bonjour, j'ai rendez-vous." : "Buenos días, tengo una cita.",
+    apartment:     isFrench ? "Bonjour, je viens voir l'appartement." : "Hola, vengo a ver el apartamento.",
+    negotiation:   isFrench ? "Bonjour, j'ai un problème avec un achat récent." : "Hola, tengo un problema con una compra reciente.",
+    debate:        isFrench ? "Bonjour, je voudrais discuter d'un sujet qui m'intéresse." : "Hola, me gustaría hablar sobre algo que me parece interesante.",
+    storytelling:  isFrench ? "Bonjour, je voulais vous raconter quelque chose qui m'est arrivé." : "Hola, quería contarte algo que me pasó.",
   }
   return prompts[scenario]
 }

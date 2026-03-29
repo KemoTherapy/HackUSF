@@ -24,7 +24,7 @@ export default function HomePage() {
           </h2>
           <p className="text-lg md:text-xl text-muted max-w-2xl">
             Language barriers isolate people every day. At the doctor, at work, in a new country.
-            Lingua gives you a safe place to practice real conversations before the stakes are real.
+            Lingua gives you a safe place to practice real conversations before the stakes are high.
           </p>
         </div>
 
@@ -112,12 +112,6 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="py-6 text-center">
-        <p className="text-sm text-muted">
-          No account needed &middot; Progress saved in your browser &middot; Built for real people in real situations
-        </p>
-      </footer>
     </div>
   )
 }

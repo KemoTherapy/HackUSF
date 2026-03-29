@@ -37,6 +37,17 @@ export function ClientRegionResources({ region }: { region: typeof REGIONS[numbe
               <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Se Regalan Dudas</li>
               <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• La Cotorrisa</li>
               <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Nada que ver</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground transition-all">
+                <a
+                  href="https://podcasts.apple.com/si/podcast/turismo-me-dico-en-me-xico-experiencias-y-costos-medical/id1510277822?i=1000620749590"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Spanish and Go — Turismo Médico en México
+                </a>
+                <span className="block text-sm text-muted mt-0.5">Medical tourism in Mexico: experiences and costs — 37 min episode</span>
+              </li>
             </ul>
           </div>
         </div>

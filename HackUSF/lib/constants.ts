@@ -77,16 +77,19 @@ export const LEVELS: LevelInfo[] = [
 ]
 
 export const SCENARIOS: ScenarioInfo[] = [
-  { id: "restaurant",   name: "Restaurant Ordering",     icon: "🍽️", estimatedTime: "~8 min",  minLevel: "A1" },
-  { id: "directions",   name: "Asking for Directions",   icon: "🗺️", estimatedTime: "~6 min",  minLevel: "A1" },
-  { id: "coffee_shop",  name: "Coffee Shop",             icon: "☕",  estimatedTime: "~5 min",  minLevel: "A1" },
-  { id: "hotel",        name: "Hotel Check-In",          icon: "🏨", estimatedTime: "~7 min",  minLevel: "A1" },
-  { id: "job_interview",name: "Job Interview",           icon: "💼", estimatedTime: "~10 min", minLevel: "B2" },
-  { id: "doctor",       name: "Doctor's Appointment",    icon: "🏥", estimatedTime: "~8 min",  minLevel: "B2" },
-  { id: "apartment",    name: "Apartment Viewing",       icon: "🏠", estimatedTime: "~8 min",  minLevel: "C1" },
-  { id: "negotiation",  name: "Resolving a Complaint",   icon: "🤝", estimatedTime: "~8 min",  minLevel: "C1" },
-  { id: "debate",       name: "Opinion Debate",          icon: "🗣️", estimatedTime: "~12 min", minLevel: "C2" },
-  { id: "storytelling", name: "Storytelling",            icon: "📖", estimatedTime: "~10 min", minLevel: "C2" },
+  { id: "restaurant",    name: "Restaurant Ordering",     icon: "🍽️", estimatedTime: "~8 min",  minLevel: "A1" },
+  { id: "directions",    name: "Asking for Directions",   icon: "🗺️", estimatedTime: "~6 min",  minLevel: "A1" },
+  { id: "coffee_shop",   name: "Coffee Shop",             icon: "☕",  estimatedTime: "~5 min",  minLevel: "A1" },
+  { id: "hotel",         name: "Hotel Check-In",          icon: "🏨", estimatedTime: "~7 min",  minLevel: "A1" },
+  { id: "physician",     name: "Physician Consultation",  icon: "",   estimatedTime: "~10 min", minLevel: "A1" },
+  { id: "soldier",       name: "Military Fieldwork",      icon: "",   estimatedTime: "~8 min",  minLevel: "A1" },
+  { id: "emergency_help",name: "Emergency Assistance",    icon: "",   estimatedTime: "~8 min",  minLevel: "A1" },
+  { id: "job_interview", name: "Job Interview",           icon: "💼", estimatedTime: "~10 min", minLevel: "B2" },
+  { id: "doctor",        name: "Doctor's Appointment",    icon: "🏥", estimatedTime: "~8 min",  minLevel: "B2" },
+  { id: "apartment",     name: "Apartment Viewing",       icon: "🏠", estimatedTime: "~8 min",  minLevel: "C1" },
+  { id: "negotiation",   name: "Resolving a Complaint",   icon: "🤝", estimatedTime: "~8 min",  minLevel: "C1" },
+  { id: "debate",        name: "Opinion Debate",          icon: "🗣️", estimatedTime: "~12 min", minLevel: "C2" },
+  { id: "storytelling",  name: "Storytelling",            icon: "📖", estimatedTime: "~10 min", minLevel: "C2" },
 ]
 
 export const LEVEL_ORDER: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"]
@@ -145,6 +148,18 @@ export const SCENARIO_CONTEXTS: Record<string, { context: string; goal: string }
     context: "Connection happens through stories. Start sharing yours.",
     goal: "Tell a complete story with a clear beginning, middle, and end.",
   },
+  physician: {
+    context: "A patient has come to see you for a general check-up or because they feel unwell. Every visit is different. Practice the vocabulary and bedside manner of a physician.",
+    goal: "Greet your patient, ask about their symptoms, make a diagnosis or recommendation, and close the consultation.",
+  },
+  soldier: {
+    context: "You are deployed in the field alongside a fellow soldier. The situation requires communication — callouts, terrain descriptions, and coordination under pressure.",
+    goal: "Communicate effectively with your fellow soldier: describe the terrain, make callouts, and coordinate your actions.",
+  },
+  emergency_help: {
+    context: "Someone needs help — it could be a stranger in the street, someone hurt, or a person asking on behalf of another. Practice being the person who shows up.",
+    goal: "Assess the situation, respond to the person in need, and coordinate appropriate help.",
+  },
 }
 
 export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; translation: string; phonetic?: string }[]>> = {
@@ -170,6 +185,24 @@ export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; tra
       { phrase: "Tengo una reservación", translation: "I have a reservation", phonetic: "TEHN-goh OO-nah reh-sehr-vah-SYOHN" },
       { phrase: "Mi nombre es...", translation: "My name is...", phonetic: "mee NOHM-breh ehs" },
       { phrase: "¿A qué hora es el desayuno?", translation: "What time is breakfast?", phonetic: "ah keh OH-rah ehs ehl deh-sah-YOO-noh" },
+    ],
+    physician: [
+      { phrase: "Buenos días, soy el médico", translation: "Good morning, I am the doctor", phonetic: "BWEH-nohs DEE-ahs, soy ehl MEH-dee-koh" },
+      { phrase: "¿Dónde le duele?", translation: "Where does it hurt?", phonetic: "DOHN-deh leh DWEH-leh" },
+      { phrase: "¿Tiene fiebre?", translation: "Do you have a fever?", phonetic: "TYEH-neh FYEH-breh" },
+      { phrase: "Abra la boca, por favor", translation: "Open your mouth, please", phonetic: "AH-brah lah BOH-kah, por fah-VOR" },
+    ],
+    soldier: [
+      { phrase: "¡Alto!", translation: "Halt!", phonetic: "AHL-toh" },
+      { phrase: "¿Cuántos enemigos?", translation: "How many enemies?", phonetic: "KWAHN-tohs eh-neh-MEE-gohs" },
+      { phrase: "¡Cuidado!", translation: "Watch out!", phonetic: "kwee-DAH-doh" },
+      { phrase: "A cubierto", translation: "Take cover", phonetic: "ah koo-BYEHR-toh" },
+    ],
+    emergency_help: [
+      { phrase: "¿Necesita ayuda?", translation: "Do you need help?", phonetic: "neh-seh-SEE-tah ah-YOO-dah" },
+      { phrase: "¿Está bien?", translation: "Are you okay?", phonetic: "ehs-TAH byehn" },
+      { phrase: "Llamo a la ambulancia", translation: "I'll call an ambulance", phonetic: "YAH-moh ah lah ahm-boo-LAHN-syah" },
+      { phrase: "Tranquilo/a, estoy aquí", translation: "Stay calm, I'm here", phonetic: "trahn-KEE-loh, ehs-TOY ah-KEE" },
     ],
   },
   A2: {
@@ -206,6 +239,24 @@ export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; tra
     hotel: [
       { phrase: "Me gustaría extender mi estancia", translation: "I would like to extend my stay" },
     ],
+    physician: [
+      { phrase: "¿Desde cuándo tiene estos síntomas?", translation: "How long have you had these symptoms?" },
+      { phrase: "Le voy a recetar un medicamento", translation: "I'm going to prescribe you a medication" },
+      { phrase: "¿Tiene alguna alergia a los medicamentos?", translation: "Are you allergic to any medications?" },
+      { phrase: "Necesita descansar y tomar líquidos", translation: "You need to rest and drink fluids" },
+    ],
+    soldier: [
+      { phrase: "El enemigo está al norte", translation: "The enemy is to the north" },
+      { phrase: "Necesitamos cobertura", translation: "We need cover" },
+      { phrase: "Hay un obstáculo en el camino", translation: "There is an obstacle on the path" },
+      { phrase: "Avancen con precaución", translation: "Advance with caution" },
+    ],
+    emergency_help: [
+      { phrase: "¿Qué le ha pasado?", translation: "What happened to you?" },
+      { phrase: "No se mueva", translation: "Don't move" },
+      { phrase: "Voy a buscar ayuda", translation: "I'm going to get help" },
+      { phrase: "¿Cuánto tiempo lleva así?", translation: "How long have you been like this?" },
+    ],
   },
   B2: {
     restaurant: [
@@ -214,6 +265,21 @@ export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; tra
     directions: [],
     coffee_shop: [],
     hotel: [],
+    physician: [
+      { phrase: "¿Podría describir el tipo de dolor — punzante, sordo, o ardiente?", translation: "Could you describe the type of pain — sharp, dull, or burning?" },
+      { phrase: "¿Tiene antecedentes familiares de esta enfermedad?", translation: "Do you have a family history of this condition?" },
+      { phrase: "Le recomiendo que se realice unos análisis", translation: "I recommend you get some tests done" },
+    ],
+    soldier: [
+      { phrase: "El terreno es accidentado hacia el este", translation: "The terrain is rough towards the east" },
+      { phrase: "Solicito apoyo aéreo en las coordenadas...", translation: "Requesting air support at coordinates..." },
+      { phrase: "Mantengan la formación y no se separen", translation: "Hold formation and stay together" },
+    ],
+    emergency_help: [
+      { phrase: "Necesito que me describa exactamente qué ocurrió", translation: "I need you to describe exactly what happened" },
+      { phrase: "Ya he llamado a los servicios de emergencia", translation: "I've already called emergency services" },
+      { phrase: "¿Toma algún medicamento habitualmente?", translation: "Do you regularly take any medication?" },
+    ],
     job_interview: [
       { phrase: "Tengo experiencia en...", translation: "I have experience in..." },
       { phrase: "Me considero una persona...", translation: "I consider myself a..." },
@@ -236,6 +302,24 @@ export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; tra
     directions: [],
     coffee_shop: [],
     hotel: [],
+    physician: [
+      { phrase: "El diagnóstico preliminar sugiere una inflamación", translation: "The preliminary diagnosis suggests inflammation" },
+      { phrase: "Voy a pedir unos análisis de sangre para descartar otras causas", translation: "I'm going to order blood tests to rule out other causes" },
+      { phrase: "Los síntomas son consistentes con una infección viral", translation: "The symptoms are consistent with a viral infection" },
+      { phrase: "Le daré el alta con las siguientes indicaciones", translation: "I'll discharge you with the following instructions" },
+    ],
+    soldier: [
+      { phrase: "La zona de aterrizaje está asegurada y lista para la extracción", translation: "The landing zone is secured and ready for extraction" },
+      { phrase: "Solicito refuerzos inmediatos en el sector este", translation: "Requesting immediate reinforcements in the east sector" },
+      { phrase: "Mantengan silencio de radio hasta nueva orden", translation: "Maintain radio silence until further orders" },
+      { phrase: "El objetivo ha sido neutralizado, regresan a base", translation: "The objective has been neutralized, returning to base" },
+    ],
+    emergency_help: [
+      { phrase: "Necesitamos evacuar esta área de inmediato", translation: "We need to evacuate this area immediately" },
+      { phrase: "¿Tiene alguna condición médica que deba saber?", translation: "Do you have any medical condition I should know about?" },
+      { phrase: "Está en manos seguras, vamos a ayudarle", translation: "You're in safe hands, we're going to help you" },
+      { phrase: "Coordino con los servicios de emergencia su traslado", translation: "I'm coordinating your transfer with emergency services" },
+    ],
     job_interview: [
       { phrase: "Mi mayor fortaleza es...", translation: "My greatest strength is..." },
       { phrase: "He liderado equipos de...", translation: "I have led teams of..." },
@@ -264,6 +348,9 @@ export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; tra
     directions: [],
     coffee_shop: [],
     hotel: [],
+    physician: [],
+    soldier: [],
+    emergency_help: [],
     job_interview: [],
     doctor: [],
     apartment: [],

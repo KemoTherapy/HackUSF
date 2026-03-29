@@ -20,19 +20,34 @@ const CEFR_DIFFICULTY: Record<CefrLevel, string> = {
   C2: "mastery — native-level idioms, cultural references, literary vocabulary",
 }
 
+const MEDICAL_CEFR_FOCUS: Record<CefrLevel, string> = {
+  A1: "basic body parts (head, arm, leg, stomach), simple symptoms (pain, fever, cough, nausea), numbers for vital signs, yes/no questions a patient might answer",
+  A2: "common symptoms and injuries, asking where it hurts, describing duration ('since yesterday', 'for two days'), basic medications, telling the patient to open their mouth or breathe",
+  B1: "describing pain type (sharp, dull, throbbing, burning), taking a brief patient history, asking about allergies and current medications, explaining what you are going to do, basic diagnoses",
+  B2: "clinical history taking, discussing treatment plans, explaining dosage and instructions, describing procedures, discussing risk factors and family history, emergency triage vocabulary",
+  C1: "specialist consultations, interpreting patient-reported symptoms precisely, informed consent language, differential diagnoses, referral and discharge instructions, trauma and emergency vocabulary",
+  C2: "full medical consultation register, rare conditions and complex pharmacology, nuanced patient communication, documentation and clinical note phrasing, ethical conversations about prognosis",
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { language, region, cefrLevel }: { language: Language; region: Region; cefrLevel: CefrLevel } = body
+    const { language, region, cefrLevel, topic }: { language: Language; region: Region; cefrLevel: CefrLevel; topic?: string } = body
 
     const langName = language === "spanish" ? "Spanish" : "French"
     const dialect = DIALECT_MAP[region]
     const difficulty = CEFR_DIFFICULTY[cefrLevel]
+    const isMedical = topic === "medical"
+
+    const topicInstruction = isMedical
+      ? `TOPIC FOCUS: Medical and healthcare vocabulary for a frontline healthcare worker (e.g. a doctor, nurse, or medic) who needs to communicate with patients in ${langName}. Focus on: ${MEDICAL_CEFR_FOCUS[cefrLevel]}. All passages and sentences must be set in a clinical or field medical context — patient consultations, triage, giving instructions, describing symptoms or treatments.`
+      : `Make exercises practical and useful for real-life everyday situations.`
 
     const prompt = `Generate 5 language learning exercises for a ${langName} learner.
 
 DIALECT: ${dialect}
 LEVEL: ${cefrLevel} — ${difficulty}
+${topicInstruction}
 
 Create a mix of exercise types. Return a JSON array of exactly 5 exercises matching this structure:
 
@@ -77,7 +92,6 @@ Rules:
 - All ${langName} content must use ${dialect}
 - Difficulty must match ${cefrLevel} level: ${difficulty}
 - Keep passages SHORT and clear
-- Make exercises practical and useful for real-life situations
 - Return ONLY the JSON array, no other text`
 
     const response = await client.messages.create({

@@ -15,6 +15,7 @@ function WritingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const levelParam = searchParams.get("level") as CefrLevel | null
+  const topicParam = searchParams.get("topic") ?? undefined
   const { session, isHydrated, addPracticeSession } = useStore()
 
   const [sessionId] = useState(() => crypto.randomUUID())
@@ -40,6 +41,7 @@ function WritingContent() {
         language: session.language!,
         region: session.region!,
         cefrLevel: level,
+        topic: topicParam,
       })
       setExercises(result)
     } catch (error) {
@@ -105,7 +107,10 @@ function WritingContent() {
             <CefrBadge level={level} size="sm" />
             <span className="text-lg">{region?.flag}</span>
           </div>
-          <span className="text-sm text-muted">
+          <span className="text-sm text-muted flex items-center gap-2">
+            {topicParam === "medical" && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-rose-500/20 text-rose-500">Medical</span>
+            )}
             Exercise {currentIndex + 1} of {exercises.length}
           </span>
           <Button

@@ -102,14 +102,16 @@ Analyze ONLY the learner's messages. Provide your analysis as a JSON object matc
 }
 
 Rules:
-- corrections array should have 1-4 items, only for real mistakes in the learner's messages
+- corrections array must have EXACTLY 2-3 items maximum — pick only the most important mistakes
+- notes arrays must have EXACTLY 2 items each — be concise
+- strengths: exactly 2 items. weaknesses: exactly 2 items. nextSteps: exactly 2 items
 - Be encouraging and constructive — this is a learning app
 - Score fairly for the CEFR level (an A1 learner who forms basic sentences deserves a decent score)
 - Return ONLY the JSON object, no other text`
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 1500,
+      max_tokens: 2500,
       messages: [{ role: "user", content: prompt }],
     })
 

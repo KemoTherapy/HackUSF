@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Lightbulb, X, BookOpen } from "lucide-react"
+import { Lightbulb, X, BookOpen, Captions } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MicButton } from "@/components/ui/mic-button"
 import { StarRating } from "@/components/ui/star-rating"
 import { PhraseBank } from "@/components/lesson/phrase-bank"
 import { HintPanel } from "@/components/lesson/hint-panel"
+import { TranscriptPanel } from "@/components/lesson/TranscriptPanel"
 import { ConversationOrb, type OrbState } from "@/components/conversation/ConversationOrb"
 import { SCENARIOS, SCENARIO_CONTEXTS, KEY_PHRASES, REGIONS } from "@/lib/constants"
 import { VoiceSelector } from "@/components/ui/voice-selector"
@@ -38,6 +39,10 @@ function LessonContent() {
   const [hasStarted, setHasStarted] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showTranscriptPanel, setShowTranscriptPanel] = useState(false)
+  const [currentAiText, setCurrentAiText] = useState("")
+  const [currentAiTranslation, setCurrentAiTranslation] = useState("")
+  const [isLoadingTranslation, setIsLoadingTranslation] = useState(false)
   // Brief scenario label shown at top
   const [showScenarioLabel, setShowScenarioLabel] = useState(true)
 
@@ -60,7 +65,7 @@ function LessonContent() {
       setSpeechError(err)
       setOrbState("idle")
     },
-    silenceMs: 4000,
+    silenceMs: 2500,
   })
 
   // Sync orb to recording state
@@ -99,6 +104,7 @@ function LessonContent() {
       // Speak opening line
       setOrbState("speaking")
       fetchSuggestions()
+      updateAiTranscript(result.aiMessage)
       speak(result.aiMessage, () => {
         setOrbState("idle")
         setTimeout(() => { startRecording(); startSuggestionTimer() }, 1500)
@@ -150,6 +156,7 @@ function LessonContent() {
       setTurns((prev) => [...prev, aiTurn])
 
       setOrbState("speaking")
+      updateAiTranscript(result.aiReply)
       if (result.lessonComplete) {
         // AI has signalled the scenario is done — end after the farewell finishes speaking
         speak(result.aiReply, () => handleEndLesson())
@@ -205,6 +212,25 @@ function LessonContent() {
     }
   }
 
+  const updateAiTranscript = async (text: string) => {
+    setCurrentAiText(text)
+    setCurrentAiTranslation("")
+    setIsLoadingTranslation(true)
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, fromLanguage: language }),
+      })
+      const data = await res.json()
+      setCurrentAiTranslation(data.translation ?? "")
+    } catch {
+      setCurrentAiTranslation("")
+    } finally {
+      setIsLoadingTranslation(false)
+    }
+  }
+
   const fetchSuggestions = async () => {
     try {
       const res = await fetch("/api/suggestions", {
@@ -225,8 +251,7 @@ function LessonContent() {
 
   const startSuggestionTimer = () => {
     if (suggestionTimerRef.current) clearTimeout(suggestionTimerRef.current)
-    setShowSuggestions(false)
-    suggestionTimerRef.current = setTimeout(() => setShowSuggestions(true), 3000)
+    setShowSuggestions(true)
   }
 
   const clearSuggestions = () => {
@@ -347,7 +372,7 @@ function LessonContent() {
 
       {/* Bottom controls */}
       <footer className="px-6 pb-8 pt-4 flex flex-col items-center gap-4">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           {/* Hints */}
           <button
             type="button"
@@ -378,6 +403,18 @@ function LessonContent() {
             </div>
             <span className="text-xs">Phrases</span>
           </button>
+
+          {/* Transcript toggle */}
+          <button
+            type="button"
+            onClick={() => setShowTranscriptPanel((v) => !v)}
+            className={`flex flex-col items-center gap-1 transition-colors ${showTranscriptPanel ? "text-primary" : "text-muted hover:text-foreground"}`}
+          >
+            <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${showTranscriptPanel ? "bg-primary/20" : "bg-card"}`}>
+              <Captions className="w-5 h-5" />
+            </div>
+            <span className="text-xs">Transcript</span>
+          </button>
         </div>
 
         <p className="text-xs text-disabled">
@@ -389,6 +426,15 @@ function LessonContent() {
 
       {/* Hints panel */}
       <HintPanel hints={hints} isOpen={showHints} onClose={() => setShowHints(false)} />
+
+      {/* Live transcript side panel */}
+      <TranscriptPanel
+        isOpen={showTranscriptPanel}
+        onClose={() => setShowTranscriptPanel(false)}
+        aiText={currentAiText}
+        translation={currentAiTranslation}
+        isLoadingTranslation={isLoadingTranslation}
+      />
 
       {/* Phrases overlay */}
       {showPhrases && (
