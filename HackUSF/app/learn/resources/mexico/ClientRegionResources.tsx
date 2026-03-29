@@ -20,20 +20,61 @@ export function ClientRegionResources({ region }: { region: typeof REGIONS[numbe
         subtitle={`Curated resources for ${region.name} (${region.language})`}
       />
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="p-6 bg-card rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">🎵 Songs</h3>
-          <p className="text-sm text-muted">Songs and playlists from {region.name} with lyrics and translations.</p>
+      <div className="mb-8 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+      <div className="grid md:grid-cols-3 gap-8">
+        <div className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card to-card/95 p-12 transition-all hover:shadow-lg hover:border-primary/50 min-h-[600px]">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+          <div className="relative">
+            <h3 className="text-3xl font-bold mb-2 flex items-center gap-3">
+              <span className="text-4xl">🎙️</span>
+              <span>Podcasts</span>
+            </h3>
+            <div className="mb-8 h-1 w-16 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+            <ul className="space-y-4">
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Leyendas Legendarias</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Podcast Mundo Futuro</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Se Regalan Dudas</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• La Cotorrisa</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Nada que ver</li>
+            </ul>
+          </div>
         </div>
 
-        <div className="p-6 bg-card rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">🎧 Podcasts</h3>
-          <p className="text-sm text-muted">Podcasts produced in {region.name} for authentic language immersion.</p>
+        <div className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card to-card/95 p-12 transition-all hover:shadow-lg hover:border-primary/50 min-h-[600px]">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+          <div className="relative">
+            <h3 className="text-3xl font-bold mb-2 flex items-center gap-3">
+              <span className="text-4xl">🎵</span>
+              <span>Songs</span>
+            </h3>
+            <div className="mb-8 h-1 w-16 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+            <ul className="space-y-4">
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Cielito Lindo</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• El Rey</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Sabor a Mí</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Todos Me Miran</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• La Bamba</li>
+            </ul>
+          </div>
         </div>
 
-        <div className="p-6 bg-card rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">🎬 Movies</h3>
-          <p className="text-sm text-muted">Films and TV shows featuring {region.name} culture and dialect.</p>
+        <div className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card to-card/95 p-12 transition-all hover:shadow-lg hover:border-primary/50 min-h-[600px]">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+          <div className="relative">
+            <h3 className="text-3xl font-bold mb-2 flex items-center gap-3">
+              <span className="text-4xl">🎬</span>
+              <span>Movies</span>
+            </h3>
+            <div className="mb-8 h-1 w-16 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+            <ul className="space-y-4">
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Y tu mamá también</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• El laberinto del fauno</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• La perla</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• María Candelaria</li>
+              <li className="text-base leading-relaxed text-foreground/90 hover:text-foreground hover:translate-x-2 transition-all">• Amores Perros</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
