@@ -10,25 +10,15 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'LinguaAI - Speak it. Learn it. Live it.',
-  description: 'Practice Spanish or French with AI-powered lessons and real conversations.',
-  generator: 'v0.app',
+  title: 'Lingua — Practice the conversations that matter most.',
+  description: 'Practice real-life Spanish and French conversations with AI. Built for people navigating a new language in the real world.',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
       {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
   },
 }
 
