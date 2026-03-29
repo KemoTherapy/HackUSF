@@ -12,8 +12,8 @@ const DIALECT_MAP: Record<Region, string> = {
 }
 
 const CEFR_INSTRUCTIONS: Record<CefrLevel, string> = {
-  A1: "ABSOLUTE BEGINNER. Max 6 words per sentence. Present tense only. Use the most common 500 words. Speak very slowly and simply.",
-  A2: "ELEMENTARY. Short simple sentences. Present and basic past tense. Common everyday vocabulary only.",
+  A1: "ABSOLUTE BEGINNER. Short simple sentences. Present tense only. Use only the most basic 200 words — greetings, numbers, food, colors, yes/no. ONE question per reply maximum. Speak naturally but very simply. Be warm and encouraging.",
+  A2: "ELEMENTARY. Short sentences. Present and simple past tense. Common everyday vocabulary. One question per reply.",
   B1: "INTERMEDIATE. Natural clear sentences. Mix tenses. Slightly broader vocabulary. Encourage the learner to give longer answers.",
   B2: "UPPER INTERMEDIATE. Speak naturally. Occasional idioms. Richer vocabulary. Expect and model complex sentences.",
   C1: "ADVANCED. Fully natural speech. Rich vocabulary, idioms, complex structures. Push for nuanced expression.",
@@ -88,10 +88,11 @@ ${OUTPUT_RULES}`
 // Strip any markdown/artifacts that slip through before streaming
 function sanitizeForSpeech(text: string): string {
   return text
-    .replace(/\*[^*]*\*/g, "")         // remove *stage directions* or *bold*
-    .replace(/\([^)]*[A-Z][^)]*\)/g, "") // remove (English translations) — caps = English
-    .replace(/\p{Emoji}/gu, "")          // remove emoji
+    .replace(/\*[^*]*\*/g, "")           // remove *stage directions* or *bold*
     .replace(/[*_`#~]/g, "")             // remove leftover markdown chars
+    // Remove emoji using explicit ranges — avoids matching digits (Unicode Emoji property includes 0-9)
+    .replace(/[\u{1F300}-\u{1FFFF}]/gu, "")
+    .replace(/[\u{2600}-\u{27BF}]/gu, "")
     .replace(/\s{2,}/g, " ")             // collapse extra spaces
     .trim()
 }

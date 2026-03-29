@@ -1,4 +1,4 @@
-import type { RegionOption, LevelInfo, ScenarioInfo, CefrLevel } from "./types"
+import type { RegionOption, LevelInfo, ScenarioInfo, CefrLevel, VoiceOption, Region } from "./types"
 
 export const REGIONS: RegionOption[] = [
   {
@@ -212,6 +212,32 @@ export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; tra
   },
 }
 
+// macOS Enhanced voices available per region
+export const VOICES_BY_REGION: Record<Region, VoiceOption[]> = {
+  mexico: [
+    { id: "Mónica", name: "Mónica", gender: "female" },
+    { id: "Reed (Spanish (Mexico))", name: "Reed", gender: "male" },
+    { id: "Eddy (Spanish (Mexico))", name: "Eddy", gender: "male" },
+  ],
+  spain: [
+    { id: "Mónica", name: "Mónica", gender: "female" },
+    { id: "Eddy (Spanish (Spain))", name: "Eddy", gender: "male" },
+  ],
+  latin_america: [
+    { id: "Mónica", name: "Mónica", gender: "female" },
+    { id: "Reed (Spanish (Mexico))", name: "Reed", gender: "male" },
+  ],
+  france: [
+    { id: "Amélie", name: "Amélie", gender: "female" },
+    { id: "Thomas", name: "Thomas", gender: "male" },
+    { id: "Jacques", name: "Jacques", gender: "male" },
+  ],
+  quebec: [
+    { id: "Amélie", name: "Amélie", gender: "female" },
+    { id: "Eddy (French (Canada))", name: "Eddy", gender: "male" },
+  ],
+}
+
 export const DEFAULT_LEVEL_PROGRESS = {
   starsEarned: 0,
   completed: false,
@@ -223,6 +249,7 @@ export const createInitialGuestSession = (): import("./types").GuestSession => (
   id: crypto.randomUUID(),
   language: null,
   region: null,
+  voice: null,
   currentLevel: "A1",
   levelProgress: {
     A1: { ...DEFAULT_LEVEL_PROGRESS },

@@ -10,8 +10,10 @@ import { PhraseBank } from "@/components/lesson/phrase-bank"
 import { HintPanel } from "@/components/lesson/hint-panel"
 import { ConversationOrb, type OrbState } from "@/components/conversation/ConversationOrb"
 import { SCENARIOS, SCENARIO_CONTEXTS, KEY_PHRASES, REGIONS } from "@/lib/constants"
+import { VoiceSelector } from "@/components/ui/voice-selector"
 import { useStore } from "@/lib/store"
 import { startLesson, sendMessage, endSession } from "@/lib/api"
+import { SuggestionChips } from "@/components/lesson/SuggestionChips"
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
 import { useTTS } from "@/hooks/use-tts"
 import type { Turn, Scenario, Phrase } from "@/lib/types"
@@ -33,10 +35,14 @@ function LessonContent() {
   const [step, setStep] = useState(1)
   const [speechError, setSpeechError] = useState<string | null>(null)
   const [isEnding, setIsEnding] = useState(false)
+  const [hasStarted, setHasStarted] = useState(false)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   // Brief scenario label shown at top
   const [showScenarioLabel, setShowScenarioLabel] = useState(true)
 
   const conversationHistory = useRef<{ role: "user" | "assistant"; content: string }[]>([])
+  const suggestionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const scenario = SCENARIOS.find((s) => s.id === scenarioId)
   const scenarioContext = SCENARIO_CONTEXTS[scenarioId] || { context: "", goal: "" }
@@ -44,9 +50,9 @@ function LessonContent() {
   const language = session.language || "spanish"
   const regionId = session.region || "mexico"
 
-  const { speak, stop: stopTTS } = useTTS(language, regionId)
+  const { speak, stop: stopTTS } = useTTS(language, regionId, session.voice)
 
-  const { isRecording, toggleRecording } = useSpeechRecognition({
+  const { isRecording, toggleRecording, startRecording } = useSpeechRecognition({
     language,
     region: regionId,
     onResult: handleSpeechResult,
@@ -54,7 +60,7 @@ function LessonContent() {
       setSpeechError(err)
       setOrbState("idle")
     },
-    silenceMs: 2000,
+    silenceMs: 4000,
   })
 
   // Sync orb to recording state
@@ -68,12 +74,7 @@ function LessonContent() {
     return () => clearTimeout(t)
   }, [])
 
-  // Init lesson on mount
-  useEffect(() => {
-    if (isHydrated && session.language && session.region && scenarioId) {
-      initLesson()
-    }
-  }, [isHydrated, session.language, session.region, scenarioId])
+  // Lesson starts only after user taps "Begin" (required for browser audio autoplay policy)
 
   const initLesson = async () => {
     try {
@@ -97,7 +98,11 @@ function LessonContent() {
 
       // Speak opening line
       setOrbState("speaking")
-      speak(result.aiMessage, () => setOrbState("idle"))
+      fetchSuggestions()
+      speak(result.aiMessage, () => {
+        setOrbState("idle")
+        setTimeout(() => { startRecording(); startSuggestionTimer() }, 600)
+      })
     } catch (err) {
       console.error("Failed to start lesson:", err)
       setOrbState("idle")
@@ -106,6 +111,7 @@ function LessonContent() {
 
   async function handleSpeechResult(transcript: string) {
     if (!transcript || isEnding) return
+    clearSuggestions()
     setSpeechError(null)
     setOrbState("thinking")
     stopTTS()
@@ -143,7 +149,11 @@ function LessonContent() {
       setTurns((prev) => [...prev, aiTurn])
 
       setOrbState("speaking")
-      speak(result.aiReply, () => setOrbState("idle"))
+      fetchSuggestions()
+      speak(result.aiReply, () => {
+        setOrbState("idle")
+        setTimeout(() => { startRecording(); startSuggestionTimer() }, 600)
+      })
     } catch (err) {
       console.error("Failed to send message:", err)
       setOrbState("idle")
@@ -189,6 +199,53 @@ function LessonContent() {
     }
   }
 
+  const fetchSuggestions = async () => {
+    try {
+      const res = await fetch("/api/suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: conversationHistory.current,
+          language,
+          cefrLevel: session.currentLevel,
+        }),
+      })
+      const data = await res.json()
+      setSuggestions(data.suggestions ?? [])
+    } catch {
+      setSuggestions([])
+    }
+  }
+
+  const startSuggestionTimer = () => {
+    if (suggestionTimerRef.current) clearTimeout(suggestionTimerRef.current)
+    setShowSuggestions(false)
+    suggestionTimerRef.current = setTimeout(() => setShowSuggestions(true), 3000)
+  }
+
+  const clearSuggestions = () => {
+    if (suggestionTimerRef.current) clearTimeout(suggestionTimerRef.current)
+    setShowSuggestions(false)
+    setSuggestions([])
+  }
+
+  const handleSuggestionSelect = (text: string) => {
+    clearSuggestions()
+    handleSpeechResult(text)
+  }
+
+  // Called when user taps "Begin" — unlock browser audio synchronously within the gesture
+  const handleBegin = async () => {
+    // Must call .play() synchronously (no await before it) so Chrome registers
+    // the user gesture and unlocks audio for the entire tab session.
+    const silent = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA")
+    silent.play().catch(() => {})  // fire-and-forget — Chrome only checks that play() was called
+
+    setHasStarted(true)
+    setOrbState("thinking")
+    await initLesson()
+  }
+
   const hints = [
     `Try greeting with "${language === "french" ? "Bonjour / Bonsoir" : "Hola / Buenas tardes"}"`,
     `Use "${language === "french" ? "Je voudrais..." : "Me gustaría..."}" for requests`,
@@ -196,6 +253,26 @@ function LessonContent() {
   ]
 
   if (!isHydrated || !scenario) return null
+
+  // ── Tap-to-begin screen ─────────────────────────────────────────────
+  if (!hasStarted) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
+        <div className="mb-4 text-4xl">{region?.flag}</div>
+        <p className="text-xs text-muted uppercase tracking-widest mb-2">{scenario.icon} {scenario.name}</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">{scenarioContext.context}</h1>
+        <p className="text-sm text-muted mb-10 max-w-xs">{scenarioContext.goal}</p>
+        <button
+          type="button"
+          onClick={handleBegin}
+          className="px-8 py-4 rounded-2xl bg-primary text-white font-semibold text-lg hover:bg-primary/90 active:scale-95 transition-all"
+        >
+          Begin Lesson
+        </button>
+        <p className="text-xs text-disabled mt-4">Tap to start · audio will play automatically</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-hidden">
@@ -211,8 +288,9 @@ function LessonContent() {
           </div>
         </div>
 
-        {/* Right: stars + end */}
+        {/* Right: voice selector + stars + end */}
         <div className="flex items-center gap-3">
+          <VoiceSelector region={regionId as import("@/lib/types").Region} />
           <StarRating earned={scoreToStars(currentScore)} size="sm" />
           <Button
             variant="destructive"
@@ -248,6 +326,12 @@ function LessonContent() {
 
         {/* The orb */}
         <ConversationOrb state={orbState} />
+
+        <SuggestionChips
+          suggestions={suggestions}
+          visible={showSuggestions}
+          onSelect={handleSuggestionSelect}
+        />
 
         {/* Error */}
         {speechError && (
@@ -291,9 +375,8 @@ function LessonContent() {
         </div>
 
         <p className="text-xs text-disabled">
-          {orbState === "idle"
-            ? isRecording ? "" : "Tap mic · speak · pause to send"
-            : orbState === "listening" ? "Pause for 2 seconds to send automatically"
+          {orbState === "listening" ? "Listening · pause 4 seconds to send"
+            : orbState === "idle" && !isRecording ? "Tap mic to speak"
             : ""}
         </p>
       </footer>

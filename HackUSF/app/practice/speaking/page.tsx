@@ -8,6 +8,7 @@ import { CefrBadge } from "@/components/ui/cefr-badge"
 import { MicButton } from "@/components/ui/mic-button"
 import { ConversationOrb, type OrbState } from "@/components/conversation/ConversationOrb"
 import { REGIONS, PRACTICE_TOPICS } from "@/lib/constants"
+import { VoiceSelector } from "@/components/ui/voice-selector"
 import { useStore } from "@/lib/store"
 import { sendMessage, endSession } from "@/lib/api"
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
@@ -37,9 +38,9 @@ function SpeakingContent() {
   const language = session.language || "spanish"
   const regionId = session.region || "mexico"
 
-  const { speak, stop: stopTTS } = useTTS(language, regionId)
+  const { speak, stop: stopTTS } = useTTS(language, regionId, session.voice)
 
-  const { isRecording, toggleRecording } = useSpeechRecognition({
+  const { isRecording, toggleRecording, startRecording } = useSpeechRecognition({
     language,
     region: regionId,
     onResult: handleSpeechResult,
@@ -47,7 +48,7 @@ function SpeakingContent() {
       setSpeechError(err)
       setOrbState("idle")
     },
-    silenceMs: 2000,
+    silenceMs: 4000,
   })
 
   // Sync orb to recording
@@ -64,6 +65,10 @@ function SpeakingContent() {
   }, [selectedTopic])
 
   const handleTopicSelect = async (topic: PracticeTopic) => {
+    // Unlock audio synchronously — must call .play() before any await
+    const silent = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA")
+    silent.play().catch(() => {})
+
     setSelectedTopic(topic)
     setOrbState("thinking")
 
@@ -97,7 +102,7 @@ function SpeakingContent() {
       setTurns([aiTurn])
 
       setOrbState("speaking")
-      speak(result.aiReply, () => setOrbState("idle"))
+      speak(result.aiReply, () => { setOrbState("idle"); setTimeout(() => startRecording(), 600) })
     } catch (err) {
       console.error("Failed to start conversation:", err)
       setOrbState("idle")
@@ -141,7 +146,7 @@ function SpeakingContent() {
       setTurns((prev) => [...prev, aiTurn])
 
       setOrbState("speaking")
-      speak(result.aiReply, () => setOrbState("idle"))
+      speak(result.aiReply, () => { setOrbState("idle"); setTimeout(() => startRecording(), 600) })
     } catch (err) {
       console.error("Failed to send message:", err)
       setOrbState("idle")
@@ -224,10 +229,13 @@ function SpeakingContent() {
           <CefrBadge level={level} size="sm" />
         </div>
         <span className="text-foreground font-mono text-sm">{formatTime(elapsedTime)}</span>
-        <Button variant="destructive" size="sm" onClick={handleEndSession} disabled={isEnding}>
-          <X className="w-4 h-4 mr-1" />
-          {isEnding ? "Saving..." : "End Session"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <VoiceSelector region={regionId as import("@/lib/types").Region} />
+          <Button variant="destructive" size="sm" onClick={handleEndSession} disabled={isEnding}>
+            <X className="w-4 h-4 mr-1" />
+            {isEnding ? "Saving..." : "End Session"}
+          </Button>
+        </div>
       </header>
 
       {/* Main — orb centered */}
@@ -254,9 +262,8 @@ function SpeakingContent() {
           disabled={orbState === "thinking" || orbState === "speaking" || isEnding}
         />
         <p className="text-xs text-disabled">
-          {orbState === "idle"
-            ? "Tap to speak · pause to send automatically"
-            : orbState === "listening" ? "Pause for 2 seconds to send"
+          {orbState === "listening" ? "Listening · pause 4 seconds to send"
+            : orbState === "idle" && !isRecording ? "Tap mic to speak"
             : ""}
         </p>
       </footer>

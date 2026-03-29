@@ -43,6 +43,8 @@ export function useSpeechRecognition({
   // Keep callbacks in refs so onend always has the latest version
   const onResultRef = useRef(onResult)
   const onErrorRef = useRef(onError)
+  // onRestart is called when Chrome ends the session with no speech — lets the caller restart
+  const onRestartRef = useRef<(() => void) | null>(null)
   useEffect(() => { onResultRef.current = onResult }, [onResult])
   useEffect(() => { onErrorRef.current = onError }, [onError])
 
@@ -58,6 +60,9 @@ export function useSpeechRecognition({
       onErrorRef.current?.("Speech recognition requires Chrome or Edge.")
       return
     }
+
+    // Don't start a new session if one is already running
+    if (recognitionRef.current) return
 
     const w = window as AnyWindow
     const SpeechRecognitionImpl = w.SpeechRecognition || w.webkitSpeechRecognition
@@ -109,6 +114,14 @@ export function useSpeechRecognition({
       transcriptRef.current = ""
       if (result) {
         onResultRef.current(result)
+      } else {
+        // Chrome ended the session with no speech (no-speech timeout or network hiccup).
+        // Restart automatically so the conversation keeps flowing.
+        setTimeout(() => {
+          if (!recognitionRef.current) {
+            onRestartRef.current?.()
+          }
+        }, 300)
       }
     }
 
@@ -132,6 +145,9 @@ export function useSpeechRecognition({
       startRecording()
     }
   }, [isRecording, startRecording, stopRecording])
+
+  // Keep onRestartRef pointing at startRecording so the no-speech auto-restart works
+  useEffect(() => { onRestartRef.current = startRecording }, [startRecording])
 
   return { isRecording, isSupported, toggleRecording, startRecording, stopRecording }
 }

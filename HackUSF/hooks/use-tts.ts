@@ -1,92 +1,71 @@
 "use client"
 
-import { useCallback, useRef, useEffect } from "react"
+import { useCallback, useRef } from "react"
 import type { Language } from "@/lib/types"
 
-const LANG_CODE: Record<string, string> = {
-  mexico:        "es-MX",
-  spain:         "es-ES",
-  latin_america: "es-419",
-  france:        "fr-FR",
-  quebec:        "fr-CA",
-}
-
-// Quality keywords — voices whose names contain these get priority
-const QUALITY_KEYWORDS = ["enhanced", "premium", "neural", "natural", "compact"]
-
-function pickBestVoice(voices: SpeechSynthesisVoice[], langCode: string): SpeechSynthesisVoice | null {
-  const lang = langCode.toLowerCase()
-  const base = lang.split("-")[0] // e.g. "es" from "es-MX"
-
-  // Candidates: exact match first, then language-prefix match
-  const exactMatches = voices.filter((v) => v.lang.toLowerCase() === lang)
-  const prefixMatches = voices.filter((v) => v.lang.toLowerCase().startsWith(base))
-  const candidates = exactMatches.length > 0 ? exactMatches : prefixMatches
-
-  if (candidates.length === 0) return null
-
-  // Prefer "enhanced" / "premium" / "neural" voices
-  for (const keyword of QUALITY_KEYWORDS) {
-    const hit = candidates.find((v) => v.name.toLowerCase().includes(keyword))
-    if (hit) return hit
-  }
-
-  // Fall back to first candidate
-  return candidates[0]
-}
-
-export function useTTS(language: Language, region: string) {
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
-  const voicesRef = useRef<SpeechSynthesisVoice[]>([])
-
-  // Load voices — they arrive async via voiceschanged event
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return
-
-    const load = () => {
-      voicesRef.current = window.speechSynthesis.getVoices()
-    }
-
-    load() // try immediately (populated in some browsers)
-    window.speechSynthesis.addEventListener("voiceschanged", load)
-    return () => window.speechSynthesis.removeEventListener("voiceschanged", load)
-  }, [])
+export function useTTS(_language: Language, region: string, voice?: string | null) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const speak = useCallback(
-    (text: string, onEnd?: () => void) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) {
+    async (text: string, onEnd?: () => void) => {
+      if (!text?.trim()) {
         onEnd?.()
         return
       }
 
-      window.speechSynthesis.cancel()
+      // Stop any current playback
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.onended = null
+        audioRef.current.onerror = null
+        audioRef.current = null
+      }
 
-      const utterance = new SpeechSynthesisUtterance(text)
-      const langCode = LANG_CODE[region] || (language === "spanish" ? "es-ES" : "fr-FR")
-      utterance.lang = langCode
-      utterance.rate = 0.92   // slightly slower than natural — easier to follow
-      utterance.pitch = 1.0
-      utterance.volume = 1.0
+      try {
+        const response = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, region, voice: voice ?? undefined }),
+        })
 
-      // Use cached voices (loaded by voiceschanged listener)
-      const voices = voicesRef.current.length > 0
-        ? voicesRef.current
-        : window.speechSynthesis.getVoices()
+        if (!response.ok) throw new Error("TTS API failed")
 
-      const best = pickBestVoice(voices, langCode)
-      if (best) utterance.voice = best
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const audio = new Audio(url)
+        audioRef.current = audio
 
-      if (onEnd) utterance.onend = onEnd
+        const cleanup = () => {
+          URL.revokeObjectURL(url)
+          audioRef.current = null
+        }
 
-      utteranceRef.current = utterance
-      window.speechSynthesis.speak(utterance)
+        audio.onended = () => {
+          cleanup()
+          onEnd?.()
+        }
+
+        audio.onerror = () => {
+          cleanup()
+          onEnd?.()
+        }
+
+        await audio.play()
+        console.log("[TTS client] playing audio, duration:", audio.duration)
+      } catch (err) {
+        console.error("[TTS client] play() failed:", err)
+        onEnd?.()
+      }
     },
-    [language, region]
+    [region]
   )
 
   const stop = useCallback(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.cancel()
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.onended = null
+      audioRef.current.onerror = null
+      audioRef.current = null
     }
   }, [])
 
