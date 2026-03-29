@@ -12,8 +12,11 @@ import type { Region } from "@/lib/types"
 
 export default function LanguageSelectionPage() {
   const router = useRouter()
-  const { setLanguageAndRegion } = useStore()
+  const { setLanguageAndRegion, session, setResourcesFlow } = useStore()
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null)
+
+  // Prioritize store flag to persist resources flow through back navigation
+  const inResourcesFlow = session?.resourcesFlow === true
 
   const spanishRegions = REGIONS.filter((r) => r.language === "spanish")
   const frenchRegions = REGIONS.filter((r) => r.language === "french")
@@ -22,7 +25,11 @@ export default function LanguageSelectionPage() {
     const region = REGIONS.find((r) => r.id === selectedRegion)
     if (region) {
       setLanguageAndRegion(region.language, region.id)
-      router.push("/learn/level")
+      if (inResourcesFlow) {
+        router.push(`/learn/resources/${region.id}`)
+      } else {
+        router.push("/learn/level")
+      }
     }
   }
 
@@ -47,7 +54,14 @@ export default function LanguageSelectionPage() {
                 key={region.id}
                 region={region}
                 isSelected={selectedRegion === region.id}
-                onClick={() => setSelectedRegion(region.id)}
+                onClick={() => {
+                  if (inResourcesFlow) {
+                    setLanguageAndRegion(region.language, region.id)
+                    router.push(`/learn/resources/${region.id}`)
+                  } else {
+                    setSelectedRegion(region.id)
+                  }
+                }}
               />
             ))}
           </div>
@@ -66,7 +80,14 @@ export default function LanguageSelectionPage() {
                 key={region.id}
                 region={region}
                 isSelected={selectedRegion === region.id}
-                onClick={() => setSelectedRegion(region.id)}
+                onClick={() => {
+                  if (inResourcesFlow) {
+                    setLanguageAndRegion(region.language, region.id)
+                    router.push(`/learn/resources/${region.id}`)
+                  } else {
+                    setSelectedRegion(region.id)
+                  }
+                }}
               />
             ))}
           </div>
