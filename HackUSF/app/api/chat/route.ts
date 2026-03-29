@@ -21,17 +21,29 @@ const CEFR_INSTRUCTIONS: Record<CefrLevel, string> = {
 }
 
 const SCENARIO_ROLES: Record<Scenario, string> = {
-  restaurant:  "You are a friendly waiter or waitress at a restaurant.",
-  directions:  "You are a helpful local person on the street giving directions.",
-  coffee_shop: "You are a barista working at a coffee shop.",
-  hotel:       "You are a professional hotel receptionist at the front desk.",
+  restaurant:   "You are a friendly waiter or waitress at a restaurant.",
+  directions:   "You are a helpful local person on the street giving directions.",
+  coffee_shop:  "You are a barista working at a coffee shop.",
+  hotel:        "You are a professional hotel receptionist at the front desk.",
+  job_interview:"You are a professional HR manager or hiring manager conducting a job interview. You are friendly but evaluative.",
+  doctor:       "You are a doctor at a medical clinic. You are calm, professional, and thorough.",
+  apartment:    "You are a landlord showing an apartment to a prospective tenant. You are friendly but businesslike.",
+  negotiation:  "You are a customer service manager at a store. You want to resolve the issue but must follow company policy.",
+  debate:       "You are an educated native speaker who enjoys discussing current events and ideas. You have your own opinions and push back respectfully.",
+  storytelling: "You are a curious native speaker who loves hearing stories and sharing your own. You ask questions to draw out more detail.",
 }
 
 const SCENARIO_COMPLETION_GOALS: Record<Scenario, string> = {
-  restaurant:  "The lesson is complete when the learner has ordered food or drink, you have confirmed the order, and the bill has been requested or provided.",
-  directions:  "The lesson is complete when the learner has asked for and received clear directions to a destination and said goodbye.",
-  coffee_shop: "The lesson is complete when the learner has ordered a drink, any customizations have been handled, and the order has been placed.",
-  hotel:       "The lesson is complete when the learner has checked in, received their room number or key information, and the check-in exchange has wrapped up.",
+  restaurant:   "The lesson is complete when the learner has ordered food or drink, you have confirmed the order, and the bill has been requested or provided.",
+  directions:   "The lesson is complete when the learner has asked for and received clear directions to a destination and said goodbye.",
+  coffee_shop:  "The lesson is complete when the learner has ordered a drink, any customizations have been handled, and the order has been placed.",
+  hotel:        "The lesson is complete when the learner has checked in, received their room number or key information, and the check-in exchange has wrapped up.",
+  job_interview:"The lesson is complete when the learner has introduced themselves, answered at least two interview questions, asked one question about the role, and the interview has been formally closed.",
+  doctor:       "The lesson is complete when the learner has described their symptoms, answered your follow-up questions, received a diagnosis or advice, and the consultation has ended.",
+  apartment:    "The lesson is complete when the learner has asked about rent, key terms, and at least one feature of the apartment, and the viewing has concluded.",
+  negotiation:  "The lesson is complete when the learner has clearly stated the problem, you have offered a resolution, the learner has responded to it, and the conversation has reached a conclusion.",
+  debate:       "The lesson is complete when both parties have expressed their position, responded to each other's arguments at least twice, and the discussion has reached a natural conclusion.",
+  storytelling: "The lesson is complete when the learner has told a story with a clear beginning, middle, and end, you have responded meaningfully, and the conversation has wrapped up.",
 }
 
 const OUTPUT_RULES = `

@@ -5,7 +5,7 @@ import { AppShell } from "@/components/layout/app-shell"
 import { PageHeader } from "@/components/layout/page-header"
 import { ScenarioCard } from "@/components/cards/scenario-card"
 import { CefrBadge } from "@/components/ui/cefr-badge"
-import { SCENARIOS, REGIONS } from "@/lib/constants"
+import { scenariosForLevel, REGIONS } from "@/lib/constants"
 import { useStore } from "@/lib/store"
 import type { Scenario } from "@/lib/types"
 
@@ -20,11 +20,13 @@ export default function ScenariosPage() {
     router.push(`/learn/lesson?scenario=${scenarioId}`)
   }
 
+  const availableScenarios = scenariosForLevel(session.currentLevel)
+
   // Calculate stars earned for each scenario at current level
   const getScenarioStars = (scenarioId: Scenario): number => {
     const levelProgress = session.levelProgress[session.currentLevel]
     if (levelProgress.scenariosCompleted.includes(scenarioId)) {
-      return Math.max(1, Math.floor(levelProgress.starsEarned / 4))
+      return Math.max(1, Math.floor(levelProgress.starsEarned / availableScenarios.length))
     }
     return 0
   }
@@ -53,7 +55,7 @@ export default function ScenariosPage() {
 
         {/* Scenario grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {SCENARIOS.map((scenario) => (
+          {availableScenarios.map((scenario) => (
             <ScenarioCard
               key={scenario.id}
               scenario={scenario}
