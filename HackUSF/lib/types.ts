@@ -4,7 +4,11 @@ export type Region = "mexico" | "spain" | "latin_america" | "france" | "quebec"
 
 export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
 
-export type Scenario = "restaurant" | "directions" | "coffee_shop" | "hotel"
+export type Scenario =
+  | "restaurant" | "directions" | "coffee_shop" | "hotel"           // A1+
+  | "job_interview" | "doctor"                                       // B2+
+  | "apartment" | "negotiation"                                      // C1+
+  | "debate" | "storytelling"                                        // C2
 
 export type PracticeMode = "speaking" | "writing"
 
@@ -30,6 +34,7 @@ export interface ScenarioInfo {
   name: string
   icon: string
   estimatedTime: string
+  minLevel: CefrLevel
 }
 
 export interface Phrase {

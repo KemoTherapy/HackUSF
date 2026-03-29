@@ -77,31 +77,24 @@ export const LEVELS: LevelInfo[] = [
 ]
 
 export const SCENARIOS: ScenarioInfo[] = [
-  {
-    id: "restaurant",
-    name: "Restaurant Ordering",
-    icon: "🍽️",
-    estimatedTime: "~8 min",
-  },
-  {
-    id: "directions",
-    name: "Asking for Directions",
-    icon: "🗺️",
-    estimatedTime: "~6 min",
-  },
-  {
-    id: "coffee_shop",
-    name: "Coffee Shop",
-    icon: "☕",
-    estimatedTime: "~5 min",
-  },
-  {
-    id: "hotel",
-    name: "Hotel Check-In",
-    icon: "🏨",
-    estimatedTime: "~7 min",
-  },
+  { id: "restaurant",   name: "Restaurant Ordering",     icon: "🍽️", estimatedTime: "~8 min",  minLevel: "A1" },
+  { id: "directions",   name: "Asking for Directions",   icon: "🗺️", estimatedTime: "~6 min",  minLevel: "A1" },
+  { id: "coffee_shop",  name: "Coffee Shop",             icon: "☕",  estimatedTime: "~5 min",  minLevel: "A1" },
+  { id: "hotel",        name: "Hotel Check-In",          icon: "🏨", estimatedTime: "~7 min",  minLevel: "A1" },
+  { id: "job_interview",name: "Job Interview",           icon: "💼", estimatedTime: "~10 min", minLevel: "B2" },
+  { id: "doctor",       name: "Doctor's Appointment",    icon: "🏥", estimatedTime: "~8 min",  minLevel: "B2" },
+  { id: "apartment",    name: "Apartment Viewing",       icon: "🏠", estimatedTime: "~8 min",  minLevel: "C1" },
+  { id: "negotiation",  name: "Resolving a Complaint",   icon: "🤝", estimatedTime: "~8 min",  minLevel: "C1" },
+  { id: "debate",       name: "Opinion Debate",          icon: "🗣️", estimatedTime: "~12 min", minLevel: "C2" },
+  { id: "storytelling", name: "Storytelling",            icon: "📖", estimatedTime: "~10 min", minLevel: "C2" },
 ]
+
+export const LEVEL_ORDER: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"]
+
+export function scenariosForLevel(level: CefrLevel): ScenarioInfo[] {
+  const idx = LEVEL_ORDER.indexOf(level)
+  return SCENARIOS.filter((s) => LEVEL_ORDER.indexOf(s.minLevel) <= idx)
+}
 
 export const PRACTICE_TOPICS = [
   { id: "introduce", label: "Introduce yourself" },
@@ -127,6 +120,30 @@ export const SCENARIO_CONTEXTS: Record<string, { context: string; goal: string }
   hotel: {
     context: "You have just arrived at your hotel",
     goal: "Check in, ask about amenities, and request a room upgrade.",
+  },
+  job_interview: {
+    context: "You are interviewing for a job at a local company",
+    goal: "Introduce yourself, answer questions about your experience, and ask about the role.",
+  },
+  doctor: {
+    context: "You are at a medical clinic",
+    goal: "Describe your symptoms clearly, answer the doctor's questions, and understand the advice given.",
+  },
+  apartment: {
+    context: "You are viewing an apartment you want to rent",
+    goal: "Ask about rent, terms, and key features, and express your interest or concerns.",
+  },
+  negotiation: {
+    context: "You bought something that is faulty and need a resolution",
+    goal: "Explain the problem clearly, negotiate a refund or replacement, and reach an agreement.",
+  },
+  debate: {
+    context: "You are having an intellectual discussion with a native speaker",
+    goal: "Express your opinion on a topic, respond to counter-arguments, and defend your position with nuance.",
+  },
+  storytelling: {
+    context: "You are sharing a personal story with a native speaker",
+    goal: "Tell a complete story with a clear beginning, middle, and end, using descriptive language throughout.",
   },
 }
 
@@ -197,18 +214,72 @@ export const KEY_PHRASES: Record<CefrLevel, Record<string, { phrase: string; tra
     directions: [],
     coffee_shop: [],
     hotel: [],
+    job_interview: [
+      { phrase: "Tengo experiencia en...", translation: "I have experience in..." },
+      { phrase: "Me considero una persona...", translation: "I consider myself a..." },
+      { phrase: "¿Cuáles son las responsabilidades del puesto?", translation: "What are the responsibilities of the position?" },
+      { phrase: "Estoy muy interesado/a en este puesto", translation: "I am very interested in this position" },
+    ],
+    doctor: [
+      { phrase: "Me duele...", translation: "My ... hurts" },
+      { phrase: "Tengo fiebre desde hace...", translation: "I've had a fever for..." },
+      { phrase: "¿Qué medicamento me recomienda?", translation: "What medication do you recommend?" },
+      { phrase: "No tengo alergia a ningún medicamento", translation: "I have no medication allergies" },
+    ],
+    apartment: [],
+    negotiation: [],
+    debate: [],
+    storytelling: [],
   },
   C1: {
     restaurant: [],
     directions: [],
     coffee_shop: [],
     hotel: [],
+    job_interview: [
+      { phrase: "Mi mayor fortaleza es...", translation: "My greatest strength is..." },
+      { phrase: "He liderado equipos de...", translation: "I have led teams of..." },
+    ],
+    doctor: [
+      { phrase: "El dolor es intermitente", translation: "The pain is intermittent" },
+      { phrase: "Empeora cuando...", translation: "It gets worse when..." },
+    ],
+    apartment: [
+      { phrase: "¿Está incluido en el alquiler?", translation: "Is it included in the rent?" },
+      { phrase: "¿Cuál es la duración mínima del contrato?", translation: "What is the minimum contract length?" },
+      { phrase: "¿Se permiten mascotas?", translation: "Are pets allowed?" },
+      { phrase: "¿Cuándo estaría disponible el piso?", translation: "When would the apartment be available?" },
+    ],
+    negotiation: [
+      { phrase: "El producto llegó defectuoso", translation: "The product arrived defective" },
+      { phrase: "Me gustaría solicitar un reembolso", translation: "I would like to request a refund" },
+      { phrase: "Esto no corresponde a lo que pedí", translation: "This does not match what I ordered" },
+      { phrase: "¿Cuál es su política de devoluciones?", translation: "What is your return policy?" },
+    ],
+    debate: [],
+    storytelling: [],
   },
   C2: {
     restaurant: [],
     directions: [],
     coffee_shop: [],
     hotel: [],
+    job_interview: [],
+    doctor: [],
+    apartment: [],
+    negotiation: [],
+    debate: [
+      { phrase: "Desde mi punto de vista...", translation: "From my point of view..." },
+      { phrase: "Habría que matizar que...", translation: "One should nuance that..." },
+      { phrase: "No estoy del todo de acuerdo porque...", translation: "I don't entirely agree because..." },
+      { phrase: "Si bien es cierto que..., también es verdad que...", translation: "While it is true that..., it is also true that..." },
+    ],
+    storytelling: [
+      { phrase: "Resulta que...", translation: "It turned out that..." },
+      { phrase: "En aquel entonces...", translation: "Back then..." },
+      { phrase: "De repente, sin esperarlo...", translation: "Suddenly, out of nowhere..." },
+      { phrase: "Al final de cuentas...", translation: "When all was said and done..." },
+    ],
   },
 }
 

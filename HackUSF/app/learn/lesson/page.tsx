@@ -101,7 +101,7 @@ function LessonContent() {
       fetchSuggestions()
       speak(result.aiMessage, () => {
         setOrbState("idle")
-        setTimeout(() => { startRecording(); startSuggestionTimer() }, 600)
+        setTimeout(() => { startRecording(); startSuggestionTimer() }, 1500)
       })
     } catch (err) {
       console.error("Failed to start lesson:", err)
@@ -156,7 +156,7 @@ function LessonContent() {
         fetchSuggestions()
         speak(result.aiReply, () => {
           setOrbState("idle")
-          setTimeout(() => { startRecording(); startSuggestionTimer() }, 600)
+          setTimeout(() => { startRecording(); startSuggestionTimer() }, 1500)
         })
       }
     } catch (err) {
