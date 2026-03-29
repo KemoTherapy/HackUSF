@@ -24,7 +24,7 @@ export function ModePicker({ selectedLevel, className }: ModePickerProps) {
           </div>
           <h3 className="text-xl font-bold text-foreground mb-2">Speaking</h3>
           <p className="text-muted leading-relaxed">
-            Have a real conversation with the AI in your chosen language. Practice pronunciation and fluency.
+            Have a real conversation with the AI in your chosen language. Pick a topic and just talk.
           </p>
         </div>
         <div className="mt-4">
@@ -46,7 +46,7 @@ export function ModePicker({ selectedLevel, className }: ModePickerProps) {
           </div>
           <h3 className="text-xl font-bold text-foreground mb-2">Writing & Reading</h3>
           <p className="text-muted leading-relaxed">
-            Read passages and complete text-based exercises. Improve comprehension and writing skills.
+            Read passages and complete exercises. A good way to sharpen your grammar and vocabulary.
           </p>
         </div>
         <div className="mt-4">

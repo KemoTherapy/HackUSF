@@ -27,15 +27,32 @@ export async function POST(request: Request) {
       return Response.json(getFallbackReport())
     }
 
+    // Compute pronunciation signal from speech recognition confidence scores
+    const confidenceScores = userTurns.map((t) => t.confidence ?? 1).filter((c) => c > 0)
+    const avgConfidence = confidenceScores.length > 0
+      ? confidenceScores.reduce((a, b) => a + b, 0) / confidenceScores.length
+      : null
+    const pronunciationScore = avgConfidence !== null ? Math.round(avgConfidence * 100) : null
+    const lowConfidenceTurns = userTurns.filter((t) => (t.confidence ?? 1) < 0.75)
+
     const transcriptText = transcript
       .map((t) => `${t.speaker === "user" ? "Learner" : "AI"}: ${t.text}`)
       .join("\n")
+
+    const pronunciationContext = pronunciationScore !== null
+      ? `PRONUNCIATION DATA (from speech recognition):
+- Average recognition confidence: ${pronunciationScore}% (${pronunciationScore >= 85 ? "clear and well-recognized" : pronunciationScore >= 65 ? "mostly clear with some unclear moments" : "frequently unclear — likely mispronunciation"})
+- Turns with low confidence (<75%): ${lowConfidenceTurns.length} of ${userTurns.length}
+- Use this as the primary basis for the pronunciation score. Do NOT estimate from text patterns.`
+      : "PRONUNCIATION DATA: Not available — estimate from text patterns."
 
     const prompt = `You are an expert ${langName} language teacher. Analyze the following conversation transcript from a language learning session and provide detailed feedback.
 
 LEARNER LEVEL: ${cefrLevel}
 MODE: ${mode === "lesson" ? `Structured lesson (${scenario || "scenario"})` : "Free conversation practice"}
 LANGUAGE: ${langName}
+
+${pronunciationContext}
 
 TRANSCRIPT:
 ${transcriptText}
@@ -47,8 +64,8 @@ Analyze ONLY the learner's messages. Provide your analysis as a JSON object matc
   "starsEarned": <number 0-5, based on overallScore: 0-19→0, 20-39→1, 40-59→2, 60-74→3, 75-89→4, 90-100→5>,
   "categories": {
     "pronunciation": {
-      "score": <0-100, estimated from text patterns>,
-      "notes": [<2-3 specific observations>]
+      "score": <0-100, use the PRONUNCIATION DATA above as primary signal>,
+      "notes": [<2-3 specific observations, reference the confidence data if available>]
     },
     "grammar": {
       "score": <0-100>,

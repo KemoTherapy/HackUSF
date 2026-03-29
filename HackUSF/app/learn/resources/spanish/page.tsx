@@ -18,7 +18,7 @@ export default function SpanishResourcesPage() {
       <div className="max-w-[1200px] mx-auto px-6 py-8 md:px-12 pb-32">
         <PageHeader
           title="Spanish Resources"
-          subtitle="Learn Spanish with curated media from all Spanish-speaking regions"
+          subtitle="Music, films, and podcasts from across the Spanish-speaking world"
         />
 
         <div className="mb-8 h-px bg-gradient-to-r from-transparent via-border to-transparent" />

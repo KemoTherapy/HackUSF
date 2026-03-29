@@ -109,7 +109,7 @@ function LessonContent() {
     }
   }
 
-  async function handleSpeechResult(transcript: string) {
+  async function handleSpeechResult(transcript: string, confidence = 1) {
     if (!transcript || isEnding) return
     clearSuggestions()
     setSpeechError(null)
@@ -121,6 +121,7 @@ function LessonContent() {
       speaker: "user",
       text: transcript,
       timestamp: new Date().toISOString(),
+      confidence,
     }
     setTurns((prev) => [...prev, userTurn])
     conversationHistory.current.push({ role: "user", content: transcript })
@@ -274,7 +275,7 @@ function LessonContent() {
         >
           Begin Lesson
         </button>
-        <p className="text-xs text-disabled mt-4">Tap to start · audio will play automatically</p>
+        <p className="text-xs text-disabled mt-4">Tap to start. Audio will play automatically.</p>
       </div>
     )
   }
@@ -380,8 +381,8 @@ function LessonContent() {
         </div>
 
         <p className="text-xs text-disabled">
-          {orbState === "listening" ? "Listening · pause 4 seconds to send"
-            : orbState === "idle" && !isRecording ? "Tap mic to speak"
+          {orbState === "listening" ? "Listening... stop talking to send"
+            : orbState === "idle" && !isRecording ? "Tap the mic to speak"
             : ""}
         </p>
       </footer>

@@ -18,7 +18,7 @@ export default function FrenchResourcesPage() {
       <div className="max-w-[1200px] mx-auto px-6 py-8 md:px-12 pb-32">
         <PageHeader
           title="French Resources"
-          subtitle="Learn French with curated media from France, Quebec, and beyond"
+          subtitle="Music, films, and podcasts from France, Quebec, and beyond"
         />
 
         <div className="mb-8 h-px bg-gradient-to-r from-transparent via-border to-transparent" />

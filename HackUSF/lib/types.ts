@@ -65,6 +65,7 @@ export interface GuestSession {
   levelProgress: Record<CefrLevel, LevelProgress>
   sessions: PracticeSession[]
   createdAt: string
+  resourcesFlow?: boolean
 }
 
 export interface PracticeSession {
@@ -89,6 +90,7 @@ export interface Turn {
   text: string
   translation?: string
   timestamp: string
+  confidence?: number  // speech recognition confidence 0-1, user turns only
 }
 
 export interface AnalysisReport {

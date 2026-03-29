@@ -106,44 +106,44 @@ export const PRACTICE_TOPICS = [
 
 export const SCENARIO_CONTEXTS: Record<string, { context: string; goal: string }> = {
   restaurant: {
-    context: "You are at a restaurant — a situation millions navigate every day in a new country",
+    context: "You're at a restaurant. Millions of people face this same moment in a new country.",
     goal: "Greet the waiter, order food, and ask for the check.",
   },
   directions: {
-    context: "You are lost in an unfamiliar city and need to ask for help",
+    context: "You're lost in an unfamiliar city and need to ask someone for help.",
     goal: "Ask a local for directions and understand their response.",
   },
   coffee_shop: {
-    context: "A simple everyday errand — but not so simple in another language",
+    context: "A simple everyday errand. Not so simple when you're still learning the language.",
     goal: "Order a coffee and a pastry, and ask about Wi-Fi.",
   },
   hotel: {
-    context: "You have just arrived somewhere new — practice making yourself understood from day one",
+    context: "You've just arrived somewhere new. Practice making yourself understood from the start.",
     goal: "Check in, ask about amenities, and request a room upgrade.",
   },
   job_interview: {
-    context: "One of the highest-stakes conversations you can have — practice it before it counts",
+    context: "One of the highest-stakes conversations you can have. Practice it before the real thing.",
     goal: "Introduce yourself, answer questions about your experience, and ask about the role.",
   },
   doctor: {
-    context: "Describing how you feel to a doctor is hard enough — harder still in another language",
+    context: "Describing how you feel to a doctor is already hard. In another language, it's even harder.",
     goal: "Describe your symptoms clearly, answer the doctor's questions, and understand the advice given.",
   },
   apartment: {
-    context: "Finding a place to live in a new country means navigating complex conversations under pressure",
+    context: "Finding a place to live in a new country means having tough conversations under pressure.",
     goal: "Ask about rent, terms, and key features, and express your interest or concerns.",
   },
   negotiation: {
-    context: "Standing up for yourself requires more than vocabulary — it requires confidence",
+    context: "Standing up for yourself takes more than vocabulary. It takes confidence.",
     goal: "Explain the problem clearly, negotiate a refund or replacement, and reach an agreement.",
   },
   debate: {
-    context: "True fluency means being able to express what you actually think, not just what is easy to say",
-    goal: "Express your opinion on a topic, respond to counter-arguments, and defend your position with nuance.",
+    context: "Real fluency means saying what you actually think, not just what's easy to say.",
+    goal: "Express your opinion on a topic, respond to counter-arguments, and defend your position.",
   },
   storytelling: {
-    context: "Connection happens through stories — practice sharing yours",
-    goal: "Tell a complete story with a clear beginning, middle, and end, using descriptive language throughout.",
+    context: "Connection happens through stories. Start sharing yours.",
+    goal: "Tell a complete story with a clear beginning, middle, and end.",
   },
 }
 

@@ -178,7 +178,7 @@ function SummaryContent() {
               <h3 className="font-semibold text-foreground mb-3">What to do next</h3>
               <ul className="space-y-2 text-sm text-muted">
                 {score < 60 && <li className="flex gap-2"><span className="text-primary">→</span> Repeat this writing session to reinforce comprehension at this level</li>}
-                {score >= 60 && <li className="flex gap-2"><span className="text-primary">→</span> Try a speaking session — reading and speaking reinforce each other</li>}
+                {score >= 60 && <li className="flex gap-2"><span className="text-primary">→</span> Try a speaking session too. Reading and speaking go well together.</li>}
                 {score >= 80 && <li className="flex gap-2"><span className="text-primary">→</span> Challenge yourself by moving up a difficulty level</li>}
                 <li className="flex gap-2"><span className="text-primary">→</span> Practice the lesson scenarios to use this vocabulary in real conversations</li>
               </ul>
