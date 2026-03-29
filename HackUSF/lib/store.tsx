@@ -10,6 +10,7 @@ interface StoreContextType {
   session: GuestSession
   setLanguageAndRegion: (language: Language, region: Region) => void
   setCurrentLevel: (level: CefrLevel) => void
+  setVoice: (voice: string) => void
   addPracticeSession: (practiceSession: PracticeSession) => void
   updateLevelProgress: (level: CefrLevel, starsEarned: number, scenario?: Scenario) => void
   resetSession: () => void
@@ -49,6 +50,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const setCurrentLevel = (level: CefrLevel) => {
     setSession((prev) => ({ ...prev, currentLevel: level }))
+  }
+
+  const setVoice = (voice: string) => {
+    setSession((prev) => ({ ...prev, voice }))
   }
 
   const addPracticeSession = (practiceSession: PracticeSession) => {
@@ -92,6 +97,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         session,
         setLanguageAndRegion,
         setCurrentLevel,
+        setVoice,
         addPracticeSession,
         updateLevelProgress,
         resetSession,
