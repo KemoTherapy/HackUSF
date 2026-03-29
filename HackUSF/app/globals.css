@@ -89,6 +89,47 @@
   }
 }
 
+/* ── Conversation Orb animations ─────────────────────────────────── */
+
+@keyframes orb-breathe {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 40px rgba(108,99,255,0.4), 0 0 80px rgba(108,99,255,0.15); }
+  50%       { transform: scale(1.04); box-shadow: 0 0 60px rgba(108,99,255,0.6), 0 0 120px rgba(108,99,255,0.2); }
+}
+
+@keyframes orb-ring-expand {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes orb-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes orb-speak {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 50px rgba(78,205,196,0.5), 0 0 100px rgba(78,205,196,0.2); }
+  40%       { transform: scale(1.06); box-shadow: 0 0 80px rgba(78,205,196,0.7), 0 0 140px rgba(78,205,196,0.3); }
+}
+
+@keyframes orb-listen {
+  0%, 100% { box-shadow: 0 0 50px rgba(108,99,255,0.7), 0 0 100px rgba(108,99,255,0.3); }
+  50%       { box-shadow: 0 0 80px rgba(108,99,255,1),   0 0 140px rgba(108,99,255,0.5); }
+}
+
+@keyframes bar-wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50%       { transform: scaleY(1); }
+}
+
+.animate-orb-breathe  { animation: orb-breathe 3s ease-in-out infinite; }
+.animate-orb-listen   { animation: orb-listen  1s ease-in-out infinite; }
+.animate-orb-speak    { animation: orb-speak   1.4s ease-in-out infinite; }
+.animate-orb-spin     { animation: orb-spin    1.4s linear infinite; }
+.animate-ring-1       { animation: orb-ring-expand 1.8s ease-out infinite; }
+.animate-ring-2       { animation: orb-ring-expand 1.8s ease-out 0.6s infinite; }
+.animate-ring-3       { animation: orb-ring-expand 1.8s ease-out 1.2s infinite; }
+.animate-bar-wave     { animation: bar-wave 0.8s ease-in-out infinite; }
+
 /* Custom animations */
 @keyframes pulse-ring {
   0% {

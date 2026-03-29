@@ -6,9 +6,10 @@ import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Mic, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AnalysisSummary } from "@/components/analysis/analysis-summary"
-import { TranscriptView } from "@/components/analysis/transcript-view"
 import { FeedbackCategory } from "@/components/analysis/feedback-category"
+import { ConversationTranscript } from "@/components/conversation/ConversationTranscript"
 import { useStore } from "@/lib/store"
+import { REGIONS } from "@/lib/constants"
 import type { AnalysisReport, Correction, PracticeMode } from "@/lib/types"
 
 // Mock analysis for demo
@@ -45,6 +46,8 @@ function SummaryContent() {
   const practiceSession = session.sessions.find((s) => s.id === sessionId)
   const analysis = practiceSession?.analysis || mockAnalysis
   const score = practiceSession?.score || analysis.overallScore
+  const transcript = practiceSession?.transcript || []
+  const regionData = REGIONS.find((r) => r.id === practiceSession?.region)
 
   // Group corrections by type
   const grammarCorrections = analysis.corrections.filter((c: Correction) => c.type === "grammar")
@@ -104,10 +107,13 @@ function SummaryContent() {
           <div className="space-y-6">
             <AnalysisSummary analysis={analysis} />
 
-            <TranscriptView
-              original="Hola, me llamo Juan. Yo soy de España y me gusta mucho viajar. Visité muchos países en Europa."
-              corrections={analysis.corrections}
-            />
+            {transcript.length > 0 && (
+              <ConversationTranscript
+                turns={transcript}
+                corrections={analysis.corrections}
+                flag={regionData?.flag}
+              />
+            )}
 
             <div className="space-y-4">
               <h3 className="font-semibold text-foreground px-2">Key Feedback</h3>

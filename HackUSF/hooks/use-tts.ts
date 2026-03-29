@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useRef } from "react"
-import type { Language, Region } from "@/lib/types"
+import type { Language } from "@/lib/types"
 
 const LANG_CODE: Record<string, string> = {
   mexico: "es-MX",
@@ -15,10 +15,12 @@ export function useTTS(language: Language, region: string) {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
   const speak = useCallback(
-    (text: string) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) return
+    (text: string, onEnd?: () => void) => {
+      if (typeof window === "undefined" || !window.speechSynthesis) {
+        onEnd?.()
+        return
+      }
 
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel()
 
       const utterance = new SpeechSynthesisUtterance(text)
@@ -26,15 +28,14 @@ export function useTTS(language: Language, region: string) {
       utterance.rate = 0.9
       utterance.pitch = 1
 
-      // Try to find a matching voice
       const voices = window.speechSynthesis.getVoices()
       const langCode = utterance.lang
       const matchingVoice =
         voices.find((v) => v.lang === langCode) ||
         voices.find((v) => v.lang.startsWith(langCode.split("-")[0]))
-      if (matchingVoice) {
-        utterance.voice = matchingVoice
-      }
+      if (matchingVoice) utterance.voice = matchingVoice
+
+      if (onEnd) utterance.onend = onEnd
 
       utteranceRef.current = utterance
       window.speechSynthesis.speak(utterance)

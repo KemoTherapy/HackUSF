@@ -16,6 +16,7 @@ interface UseSpeechRecognitionOptions {
   region: string
   onResult: (transcript: string) => void
   onError?: (error: string) => void
+  silenceMs?: number // auto-stop after this many ms of silence (default 2000)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +27,7 @@ export function useSpeechRecognition({
   region,
   onResult,
   onError,
+  silenceMs = 2000,
 }: UseSpeechRecognitionOptions) {
   const [isRecording, setIsRecording] = useState(false)
   const [isSupported] = useState(() => {
@@ -36,12 +38,20 @@ export function useSpeechRecognition({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const transcriptRef = useRef("")
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Keep callbacks in refs so onend always has the latest version
   const onResultRef = useRef(onResult)
   const onErrorRef = useRef(onError)
-
   useEffect(() => { onResultRef.current = onResult }, [onResult])
   useEffect(() => { onErrorRef.current = onError }, [onError])
+
+  const clearSilenceTimer = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current)
+      silenceTimerRef.current = null
+    }
+  }, [])
 
   const startRecording = useCallback(() => {
     if (!isSupported) {
@@ -68,11 +78,22 @@ export function useSpeechRecognition({
           newTranscript += event.results[i][0].transcript + " "
         }
       }
-      transcriptRef.current += newTranscript
+      if (newTranscript.trim()) {
+        transcriptRef.current += newTranscript
+        // Reset silence timer on each new speech result
+        clearSilenceTimer()
+        silenceTimerRef.current = setTimeout(() => {
+          // Auto-stop after silence — triggers onend which fires onResult
+          if (recognitionRef.current) {
+            recognitionRef.current.stop()
+          }
+        }, silenceMs)
+      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
+      clearSilenceTimer()
       if (event.error !== "aborted" && event.error !== "no-speech") {
         onErrorRef.current?.("Microphone error. Please try again.")
       }
@@ -81,6 +102,8 @@ export function useSpeechRecognition({
 
     // onend fires AFTER all onresult events — safe to read the full transcript here
     recognition.onend = () => {
+      clearSilenceTimer()
+      recognitionRef.current = null
       setIsRecording(false)
       const result = transcriptRef.current.trim()
       transcriptRef.current = ""
@@ -92,14 +115,15 @@ export function useSpeechRecognition({
     recognitionRef.current = recognition
     recognition.start()
     setIsRecording(true)
-  }, [isSupported, language, region])
+  }, [isSupported, language, region, silenceMs, clearSilenceTimer])
 
   const stopRecording = useCallback(() => {
+    clearSilenceTimer()
     if (recognitionRef.current) {
-      recognitionRef.current.stop() // triggers onend, which fires onResult
+      recognitionRef.current.stop() // triggers onend → onResult
       recognitionRef.current = null
     }
-  }, [])
+  }, [clearSilenceTimer])
 
   const toggleRecording = useCallback(() => {
     if (isRecording) {

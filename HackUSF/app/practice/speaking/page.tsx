@@ -6,8 +6,7 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { CefrBadge } from "@/components/ui/cefr-badge"
 import { MicButton } from "@/components/ui/mic-button"
-import { AudioWaveform } from "@/components/ui/audio-waveform"
-import { ChatBubble } from "@/components/lesson/chat-bubble"
+import { ConversationOrb, type OrbState } from "@/components/conversation/ConversationOrb"
 import { REGIONS, PRACTICE_TOPICS } from "@/lib/constants"
 import { useStore } from "@/lib/store"
 import { sendMessage, endSession } from "@/lib/api"
@@ -23,14 +22,13 @@ function SpeakingContent() {
   const { session, isHydrated, addPracticeSession } = useStore()
 
   const [sessionId] = useState(() => crypto.randomUUID())
-  const [messages, setMessages] = useState<Turn[]>([])
+  const [turns, setTurns] = useState<Turn[]>([])
   const [selectedTopic, setSelectedTopic] = useState<PracticeTopic | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [streamingText, setStreamingText] = useState("")
+  const [orbState, setOrbState] = useState<OrbState>("idle")
   const [elapsedTime, setElapsedTime] = useState(0)
   const [speechError, setSpeechError] = useState<string | null>(null)
+  const [isEnding, setIsEnding] = useState(false)
 
-  const chatContainerRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const conversationHistory = useRef<{ role: "user" | "assistant"; content: string }[]>([])
 
@@ -39,47 +37,40 @@ function SpeakingContent() {
   const language = session.language || "spanish"
   const regionId = session.region || "mexico"
 
-  const { speak } = useTTS(language, regionId)
+  const { speak, stop: stopTTS } = useTTS(language, regionId)
 
   const { isRecording, toggleRecording } = useSpeechRecognition({
     language,
     region: regionId,
     onResult: handleSpeechResult,
-    onError: (err) => setSpeechError(err),
+    onError: (err) => {
+      setSpeechError(err)
+      setOrbState("idle")
+    },
+    silenceMs: 2000,
   })
+
+  // Sync orb to recording
+  useEffect(() => {
+    if (isRecording) setOrbState("listening")
+  }, [isRecording])
 
   // Timer
   useEffect(() => {
     if (selectedTopic) {
-      timerRef.current = setInterval(() => {
-        setElapsedTime((prev) => prev + 1)
-      }, 1000)
+      timerRef.current = setInterval(() => setElapsedTime((p) => p + 1), 1000)
     }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [selectedTopic])
-
-  // Scroll to bottom
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-    }
-  }, [messages, streamingText])
 
   const handleTopicSelect = async (topic: PracticeTopic) => {
     setSelectedTopic(topic)
-    setIsLoading(true)
+    setOrbState("thinking")
 
     const topicLabel = PRACTICE_TOPICS.find((t) => t.id === topic)?.label || topic
-
-    // Opening user message to seed the conversation
     const openingUser = language === "french"
       ? `Je voudrais pratiquer: ${topicLabel}`
       : `Quiero practicar: ${topicLabel}`
-
-    let aiText = ""
-    setStreamingText("")
 
     try {
       const result = await sendMessage({
@@ -90,10 +81,6 @@ function SpeakingContent() {
         cefrLevel: level,
         mode: "speaking",
         topic: topicLabel,
-        onChunk: (chunk) => {
-          aiText += chunk
-          setStreamingText(aiText)
-        },
       })
 
       conversationHistory.current = [
@@ -101,40 +88,36 @@ function SpeakingContent() {
         { role: "assistant", content: result.aiReply },
       ]
 
-      const aiMessage: Turn = {
+      const aiTurn: Turn = {
         id: crypto.randomUUID(),
         speaker: "ai",
         text: result.aiReply,
         timestamp: new Date().toISOString(),
       }
-      setMessages([aiMessage])
-      setStreamingText("")
-      speak(result.aiReply)
-    } catch (error) {
-      console.error("Failed to start conversation:", error)
-      setStreamingText("")
-    } finally {
-      setIsLoading(false)
+      setTurns([aiTurn])
+
+      setOrbState("speaking")
+      speak(result.aiReply, () => setOrbState("idle"))
+    } catch (err) {
+      console.error("Failed to start conversation:", err)
+      setOrbState("idle")
     }
   }
 
   async function handleSpeechResult(transcript: string) {
-    if (!transcript || isLoading) return
-
+    if (!transcript || isEnding) return
     setSpeechError(null)
-    setIsLoading(true)
+    setOrbState("thinking")
+    stopTTS()
 
-    const userMessage: Turn = {
+    const userTurn: Turn = {
       id: crypto.randomUUID(),
       speaker: "user",
       text: transcript,
       timestamp: new Date().toISOString(),
     }
-    setMessages((prev) => [...prev, userMessage])
+    setTurns((prev) => [...prev, userTurn])
     conversationHistory.current.push({ role: "user", content: transcript })
-
-    let aiText = ""
-    setStreamingText("")
 
     try {
       const result = await sendMessage({
@@ -145,39 +128,37 @@ function SpeakingContent() {
         cefrLevel: level,
         mode: "speaking",
         topic: selectedTopic || undefined,
-        onChunk: (chunk) => {
-          aiText += chunk
-          setStreamingText(aiText)
-        },
       })
 
       conversationHistory.current.push({ role: "assistant", content: result.aiReply })
 
-      const aiMessage: Turn = {
+      const aiTurn: Turn = {
         id: crypto.randomUUID(),
         speaker: "ai",
         text: result.aiReply,
         timestamp: new Date().toISOString(),
       }
-      setMessages((prev) => [...prev, aiMessage])
-      setStreamingText("")
-      speak(result.aiReply)
-    } catch (error) {
-      console.error("Failed to send message:", error)
-      setStreamingText("")
-    } finally {
-      setIsLoading(false)
+      setTurns((prev) => [...prev, aiTurn])
+
+      setOrbState("speaking")
+      speak(result.aiReply, () => setOrbState("idle"))
+    } catch (err) {
+      console.error("Failed to send message:", err)
+      setOrbState("idle")
     }
   }
 
   const handleEndSession = async () => {
+    if (isEnding) return
+    setIsEnding(true)
+    stopTTS()
     if (timerRef.current) clearInterval(timerRef.current)
+    setOrbState("thinking")
 
-    setIsLoading(true)
     try {
       const analysis = await endSession({
         sessionId,
-        transcript: messages,
+        transcript: turns,
         language,
         cefrLevel: level,
         mode: "speaking",
@@ -192,109 +173,93 @@ function SpeakingContent() {
         topic: selectedTopic || undefined,
         startTime: new Date(Date.now() - elapsedTime * 1000).toISOString(),
         endTime: new Date().toISOString(),
-        transcript: messages,
+        transcript: turns,
         analysis,
         score: analysis.overallScore,
       })
 
       router.push(`/practice/summary?sessionId=${sessionId}&mode=speaking`)
-    } catch (error) {
-      console.error("Failed to end session:", error)
+    } catch (err) {
+      console.error("Failed to end session:", err)
       router.push("/practice")
-    } finally {
-      setIsLoading(false)
     }
   }
 
   if (!isHydrated) return null
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top bar */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <span className="text-lg">{region?.flag}</span>
-            <CefrBadge level={level} size="sm" />
-          </div>
-          <span className="text-foreground font-mono">{formatTime(elapsedTime)}</span>
-          <Button variant="destructive" size="sm" onClick={handleEndSession} disabled={isLoading}>
-            <X className="w-4 h-4 mr-1" />
-            End Session
-          </Button>
+  // ── Topic selection screen ──────────────────────────────────────────
+  if (!selectedTopic) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        <div className="mb-8 text-center">
+          <span className="text-3xl">{region?.flag}</span>
+          <CefrBadge level={level} size="sm" className="mt-2" />
         </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2 text-center">What do you want to talk about?</h2>
+        <p className="text-muted text-sm mb-8 text-center">Choose a topic and the AI will start the conversation</p>
+        <div className="flex flex-wrap gap-3 justify-center max-w-md">
+          {PRACTICE_TOPICS.map((topic) => (
+            <button
+              key={topic.id}
+              type="button"
+              onClick={() => handleTopicSelect(topic.id as PracticeTopic)}
+              className="px-5 py-3 rounded-full bg-card border border-border text-foreground hover:bg-primary hover:border-primary hover:text-white transition-all text-sm font-medium"
+            >
+              {topic.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Conversation screen ─────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+
+      {/* Top bar */}
+      <header className="sticky top-0 z-40 flex items-center justify-between px-5 py-4">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">{region?.flag}</span>
+          <CefrBadge level={level} size="sm" />
+        </div>
+        <span className="text-foreground font-mono text-sm">{formatTime(elapsedTime)}</span>
+        <Button variant="destructive" size="sm" onClick={handleEndSession} disabled={isEnding}>
+          <X className="w-4 h-4 mr-1" />
+          {isEnding ? "Saving..." : "End Session"}
+        </Button>
       </header>
 
-      {/* Main content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Topic selection */}
-        {!selectedTopic ? (
-          <div className="flex-1 flex items-center justify-center p-6">
-            <div className="w-full max-w-lg bg-card rounded-2xl p-6 card-shadow">
-              <h2 className="text-lg font-semibold text-foreground mb-4 text-center">
-                What do you want to talk about?
-              </h2>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {PRACTICE_TOPICS.map((topic) => (
-                  <button
-                    key={topic.id}
-                    type="button"
-                    onClick={() => handleTopicSelect(topic.id as PracticeTopic)}
-                    className="px-4 py-2 rounded-full bg-background-elevated text-foreground hover:bg-primary hover:text-white transition-colors"
-                  >
-                    {topic.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Chat area */}
-            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message) => (
-                <ChatBubble
-                  key={message.id}
-                  speaker={message.speaker}
-                  text={message.text}
-                  flag={region?.flag}
-                  onSpeak={message.speaker === "ai" ? () => speak(message.text) : undefined}
-                />
-              ))}
+      {/* Main — orb centered */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6">
+        {/* Topic pill */}
+        <div className="mb-10 px-4 py-1.5 rounded-full bg-card border border-border">
+          <p className="text-sm text-muted">
+            {PRACTICE_TOPICS.find((t) => t.id === selectedTopic)?.label}
+          </p>
+        </div>
 
-              {streamingText && (
-                <ChatBubble speaker="ai" text={streamingText} flag={region?.flag} isStreaming />
-              )}
+        <ConversationOrb state={orbState} />
 
-              {isLoading && !streamingText && (
-                <div className="flex items-center gap-2 text-muted">
-                  <div className="w-2 h-2 rounded-full bg-muted animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-2 h-2 rounded-full bg-muted animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-2 h-2 rounded-full bg-muted animate-bounce" style={{ animationDelay: "300ms" }} />
-                </div>
-              )}
-            </div>
-
-            {/* Input bar */}
-            <div className="border-t border-border p-4 bg-card">
-              {speechError && (
-                <p className="text-center text-sm text-error mb-2">{speechError}</p>
-              )}
-              {isRecording && (
-                <div className="flex justify-center mb-4">
-                  <AudioWaveform isActive={isRecording} />
-                </div>
-              )}
-              <div className="flex flex-col items-center gap-2">
-                <MicButton isRecording={isRecording} onToggle={toggleRecording} disabled={isLoading} />
-                <span className="text-sm text-muted">
-                  {isRecording ? "Recording... tap to stop" : "Tap to speak"}
-                </span>
-              </div>
-            </div>
-          </>
+        {speechError && (
+          <p className="mt-6 text-sm text-error text-center">{speechError}</p>
         )}
       </main>
+
+      {/* Bottom controls */}
+      <footer className="px-6 pb-8 pt-4 flex flex-col items-center gap-3">
+        <MicButton
+          isRecording={isRecording}
+          onToggle={toggleRecording}
+          disabled={orbState === "thinking" || orbState === "speaking" || isEnding}
+        />
+        <p className="text-xs text-disabled">
+          {orbState === "idle"
+            ? "Tap to speak · pause to send automatically"
+            : orbState === "listening" ? "Pause for 2 seconds to send"
+            : ""}
+        </p>
+      </footer>
     </div>
   )
 }
