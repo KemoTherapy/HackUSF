@@ -4,13 +4,13 @@ import { REGIONS } from "@/lib/constants"
 import { ClientRegionResources } from "./ClientRegionResources"
 
 interface Props {
-  params: {
+  params: Promise<{
     region: string
-  }
+  }>
 }
 
-export default function RegionResourcesPage({ params }: Props) {
-  const regionId = params.region
+export default async function RegionResourcesPage({ params }: Props) {
+  const { region: regionId } = await params
   const region = REGIONS.find((r) => r.id === regionId)
 
   if (!region) {
@@ -25,7 +25,7 @@ export default function RegionResourcesPage({ params }: Props) {
   }
 
   return (
-    <AppShell showBackButton backHref="/learn/language?next=resources">
+    <AppShell showBackButton backHref="/learn/language">
       <ClientRegionResources region={region} />
     </AppShell>
   )

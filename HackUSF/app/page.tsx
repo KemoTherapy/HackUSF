@@ -1,9 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { GraduationCap, Target, ArrowRight } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { GraduationCap, Target, ArrowRight, Clapperboard } from "lucide-react"
+import { useStore } from "@/lib/store"
 
 export default function HomePage() {
+  const router = useRouter()
+  const { setResourcesFlow } = useStore()
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Logo */}
@@ -14,20 +18,24 @@ export default function HomePage() {
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 md:px-12">
         {/* Hero section */}
-        <div className="text-center mb-12">
+        <div className="w-full text-center mb-12 flex flex-col items-center justify-center">
           <h2 className="text-4xl md:text-6xl font-extrabold text-foreground mb-4 text-balance">
             Speak it. Learn it. Live it.
           </h2>
-          <p className="text-lg md:text-xl text-muted max-w-xl mx-auto">
+          <p className="text-lg md:text-xl text-muted max-w-xl">
             Practice Spanish or French with AI-powered lessons and real conversations.
           </p>
         </div>
 
         {/* CTA Cards */}
-        <div className="w-full max-w-4xl grid md:grid-cols-2 gap-6">
+        <div className="w-full max-w-6xl grid md:grid-cols-3 gap-6">
           {/* Learn Card */}
-          <Link
-            href="/learn/language"
+          <button
+            type="button"
+            onClick={() => {
+              setResourcesFlow(false)
+              router.push("/learn/language")
+            }}
             className="group relative min-h-[280px] rounded-2xl bg-card p-8 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] card-shadow hover:ring-2 hover:ring-primary hover:glow-primary"
           >
             <div>
@@ -45,7 +53,7 @@ export default function HomePage() {
                 <ArrowRight className="w-4 h-4" />
               </span>
             </div>
-          </Link>
+          </button>
 
           {/* Practice Card */}
           <Link
@@ -68,6 +76,32 @@ export default function HomePage() {
               </span>
             </div>
           </Link>
+
+          {/* Resources Card */}
+          <button
+            type="button"
+            onClick={() => {
+              setResourcesFlow(true)
+              router.push("/learn/language")
+            }}
+            className="group relative min-h-[280px] rounded-2xl bg-card p-8 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] card-shadow hover:ring-2 hover:ring-yellow-500 hover:glow-yellow"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center mb-4">
+                <Clapperboard className="w-6 h-6 text-yellow-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-3">Resources</h3>
+              <p className="text-muted leading-relaxed">
+                Immerse yourself in the language through music, films, and cultural media. Learn naturally through content you actually enjoy.
+              </p>
+            </div>
+            <div className="mt-6">
+              <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-500 text-white font-semibold transition-all group-hover:gap-3">
+                Explore Resources
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            </div>
+          </button>
         </div>
       </main>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useState, useEffect, type ReactNode } from "react"
 import type { GuestSession, Language, Region, CefrLevel, Scenario, PracticeSession } from "./types"
 import { createInitialGuestSession } from "./constants"
 
@@ -8,6 +8,7 @@ const STORAGE_KEY = "lingua_guest_session"
 
 interface StoreContextType {
   session: GuestSession
+  setResourcesFlow: (enabled: boolean) => void
   setLanguageAndRegion: (language: Language, region: Region) => void
   setCurrentLevel: (level: CefrLevel) => void
   addPracticeSession: (practiceSession: PracticeSession) => void
@@ -43,22 +44,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [session, isHydrated])
 
-  const setLanguageAndRegion = (language: Language, region: Region) => {
+  const setResourcesFlow = useCallback((enabled: boolean) => {
+    setSession((prev) => ({ ...prev, resourcesFlow: enabled }))
+  }, [])
+
+  const setLanguageAndRegion = useCallback((language: Language, region: Region) => {
     setSession((prev) => ({ ...prev, language, region }))
-  }
+  }, [])
 
-  const setCurrentLevel = (level: CefrLevel) => {
+  const setCurrentLevel = useCallback((level: CefrLevel) => {
     setSession((prev) => ({ ...prev, currentLevel: level }))
-  }
+  }, [])
 
-  const addPracticeSession = (practiceSession: PracticeSession) => {
+  const addPracticeSession = useCallback((practiceSession: PracticeSession) => {
     setSession((prev) => ({
       ...prev,
       sessions: [...prev.sessions, practiceSession],
     }))
-  }
+  }, [])
 
-  const updateLevelProgress = (level: CefrLevel, starsEarned: number, scenario?: Scenario) => {
+  const updateLevelProgress = useCallback((level: CefrLevel, starsEarned: number, scenario?: Scenario) => {
     setSession((prev) => {
       const currentProgress = prev.levelProgress[level]
       const newScenariosCompleted = scenario && !currentProgress.scenariosCompleted.includes(scenario)
@@ -78,18 +83,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         },
       }
     })
-  }
+  }, [])
 
-  const resetSession = () => {
+  const resetSession = useCallback(() => {
     const newSession = createInitialGuestSession()
     setSession(newSession)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newSession))
-  }
+  }, [])
 
   return (
     <StoreContext.Provider
       value={{
         session,
+        setResourcesFlow,
         setLanguageAndRegion,
         setCurrentLevel,
         addPracticeSession,

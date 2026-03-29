@@ -10,7 +10,8 @@ export function ClientRegionResources({ region }: { region: typeof REGIONS[numbe
 
   useEffect(() => {
     if (region) setLanguageAndRegion(region.language, region.id)
-  }, [region, setLanguageAndRegion])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region])
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8 md:px-12 pb-32">
@@ -21,18 +22,18 @@ export function ClientRegionResources({ region }: { region: typeof REGIONS[numbe
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="p-6 bg-card rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Videos</h3>
-          <p className="text-sm text-muted">Videos tailored to {region.name} dialect.</p>
+          <h3 className="text-lg font-semibold mb-2">🎵 Songs</h3>
+          <p className="text-sm text-muted">Songs and playlists from {region.name} with lyrics and translations.</p>
         </div>
 
         <div className="p-6 bg-card rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Music</h3>
-          <p className="text-sm text-muted">Local playlists and lyrics for {region.name} speakers.</p>
+          <h3 className="text-lg font-semibold mb-2">�️ Podcasts</h3>
+          <p className="text-sm text-muted">Podcasts produced in {region.name} for authentic language immersion.</p>
         </div>
 
         <div className="p-6 bg-card rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Articles</h3>
-          <p className="text-sm text-muted">Articles and reading material aligned with {region.name} dialect.</p>
+          <h3 className="text-lg font-semibold mb-2">🎬 Movies</h3>
+          <p className="text-sm text-muted">Films and TV shows featuring {region.name} culture and dialect.</p>
         </div>
       </div>
     </div>
