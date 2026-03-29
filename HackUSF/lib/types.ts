@@ -45,10 +45,17 @@ export interface LevelProgress {
   bestScore: number
 }
 
+export interface VoiceOption {
+  id: string        // exact macOS voice name passed to say -v
+  name: string      // display name
+  gender: "female" | "male"
+}
+
 export interface GuestSession {
   id: string
   language: Language | null
   region: Region | null
+  voice: string | null  // selected voice id (macOS voice name)
   currentLevel: CefrLevel
   levelProgress: Record<CefrLevel, LevelProgress>
   sessions: PracticeSession[]

@@ -1,50 +1,71 @@
 "use client"
 
 import { useCallback, useRef } from "react"
-import type { Language, Region } from "@/lib/types"
+import type { Language } from "@/lib/types"
 
-const LANG_CODE: Record<string, string> = {
-  mexico: "es-MX",
-  spain: "es-ES",
-  latin_america: "es-419",
-  france: "fr-FR",
-  quebec: "fr-CA",
-}
-
-export function useTTS(language: Language, region: string) {
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+export function useTTS(_language: Language, region: string, voice?: string | null) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const speak = useCallback(
-    (text: string) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) return
-
-      // Cancel any ongoing speech
-      window.speechSynthesis.cancel()
-
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.lang = LANG_CODE[region] || (language === "spanish" ? "es-ES" : "fr-FR")
-      utterance.rate = 0.9
-      utterance.pitch = 1
-
-      // Try to find a matching voice
-      const voices = window.speechSynthesis.getVoices()
-      const langCode = utterance.lang
-      const matchingVoice =
-        voices.find((v) => v.lang === langCode) ||
-        voices.find((v) => v.lang.startsWith(langCode.split("-")[0]))
-      if (matchingVoice) {
-        utterance.voice = matchingVoice
+    async (text: string, onEnd?: () => void) => {
+      if (!text?.trim()) {
+        onEnd?.()
+        return
       }
 
-      utteranceRef.current = utterance
-      window.speechSynthesis.speak(utterance)
+      // Stop any current playback
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.onended = null
+        audioRef.current.onerror = null
+        audioRef.current = null
+      }
+
+      try {
+        const response = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, region, voice: voice ?? undefined }),
+        })
+
+        if (!response.ok) throw new Error("TTS API failed")
+
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const audio = new Audio(url)
+        audioRef.current = audio
+
+        const cleanup = () => {
+          URL.revokeObjectURL(url)
+          audioRef.current = null
+        }
+
+        audio.onended = () => {
+          cleanup()
+          onEnd?.()
+        }
+
+        audio.onerror = () => {
+          cleanup()
+          onEnd?.()
+        }
+
+        await audio.play()
+        console.log("[TTS client] playing audio, duration:", audio.duration)
+      } catch (err) {
+        console.error("[TTS client] play() failed:", err)
+        onEnd?.()
+      }
     },
-    [language, region]
+    [region]
   )
 
   const stop = useCallback(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.cancel()
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.onended = null
+      audioRef.current.onerror = null
+      audioRef.current = null
     }
   }, [])
 

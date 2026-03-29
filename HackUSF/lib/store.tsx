@@ -11,6 +11,7 @@ interface StoreContextType {
   setResourcesFlow: (enabled: boolean) => void
   setLanguageAndRegion: (language: Language, region: Region) => void
   setCurrentLevel: (level: CefrLevel) => void
+  setVoice: (voice: string) => void
   addPracticeSession: (practiceSession: PracticeSession) => void
   updateLevelProgress: (level: CefrLevel, starsEarned: number, scenario?: Scenario) => void
   resetSession: () => void
@@ -57,6 +58,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addPracticeSession = useCallback((practiceSession: PracticeSession) => {
+  const setVoice = useCallback((voice: string) => {
+    setSession((prev) => ({ ...prev, voice }))
+  }, [])
+
+  const addPracticeSession = useCallback((practiceSession: PracticeSession) => {
     setSession((prev) => ({
       ...prev,
       sessions: [...prev.sessions, practiceSession],
@@ -98,6 +104,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setResourcesFlow,
         setLanguageAndRegion,
         setCurrentLevel,
+        setVoice,
         addPracticeSession,
         updateLevelProgress,
         resetSession,
