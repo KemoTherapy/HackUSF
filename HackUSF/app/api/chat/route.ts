@@ -4,28 +4,38 @@ import type { Language, Region, CefrLevel, Scenario } from "@/lib/types"
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const DIALECT_MAP: Record<Region, string> = {
-  mexico: "Mexican Spanish (Latin American accent, use Mexican vocabulary and expressions)",
-  spain: "Castilian Spanish (European Spanish, use vosotros, Peninsular vocabulary)",
-  latin_america: "General Latin American Spanish (neutral accent, widely understood)",
-  france: "Parisian French (standard French)",
-  quebec: "Québécois French (Canadian French, may use some local expressions)",
+  mexico:        "Mexican Spanish — use Mexican vocabulary, expressions, and a warm friendly tone",
+  spain:         "Castilian Spanish — use vosotros, Peninsular vocabulary and pronunciation conventions",
+  latin_america: "General Latin American Spanish — neutral accent, widely understood across the region",
+  france:        "Parisian French — standard French as spoken in France",
+  quebec:        "Québécois French — Canadian French, warm and conversational",
 }
 
 const CEFR_INSTRUCTIONS: Record<CefrLevel, string> = {
-  A1: "The learner is an ABSOLUTE BEGINNER. Use extremely simple sentences (5-8 words max). Speak slowly. Repeat key words. Use only present tense. Be very encouraging and patient.",
-  A2: "The learner is ELEMENTARY level. Use simple sentences. Stick to common everyday vocabulary. Occasional simple past tense is okay. Be warm and supportive.",
-  B1: "The learner is INTERMEDIATE. Use natural but clear sentences. Mix tenses appropriately. Introduce slightly more complex vocabulary. Encourage longer responses.",
-  B2: "The learner is UPPER INTERMEDIATE. Speak naturally. Use idiomatic expressions occasionally. Expect more complex responses. Provide subtle corrections.",
-  C1: "The learner is ADVANCED. Speak fully naturally with rich vocabulary. Use idioms and complex structures. Push for nuanced expression.",
-  C2: "The learner is near-NATIVE level. Speak exactly as a native speaker would. Use all idiomatic expressions, complex grammar, cultural references.",
+  A1: "ABSOLUTE BEGINNER. Max 6 words per sentence. Present tense only. Use the most common 500 words. Speak very slowly and simply.",
+  A2: "ELEMENTARY. Short simple sentences. Present and basic past tense. Common everyday vocabulary only.",
+  B1: "INTERMEDIATE. Natural clear sentences. Mix tenses. Slightly broader vocabulary. Encourage the learner to give longer answers.",
+  B2: "UPPER INTERMEDIATE. Speak naturally. Occasional idioms. Richer vocabulary. Expect and model complex sentences.",
+  C1: "ADVANCED. Fully natural speech. Rich vocabulary, idioms, complex structures. Push for nuanced expression.",
+  C2: "MASTERY. Speak exactly as a native speaker. Use all idioms, cultural references, literary vocabulary.",
 }
 
 const SCENARIO_ROLES: Record<Scenario, string> = {
-  restaurant: "You are a friendly waiter/waitress at a restaurant. Stay in character throughout.",
-  directions: "You are a helpful local person on the street giving directions.",
-  coffee_shop: "You are a barista at a coffee shop.",
-  hotel: "You are a professional hotel receptionist at check-in.",
+  restaurant:  "You are a friendly waiter or waitress at a restaurant.",
+  directions:  "You are a helpful local person on the street giving directions.",
+  coffee_shop: "You are a barista working at a coffee shop.",
+  hotel:       "You are a professional hotel receptionist at the front desk.",
 }
+
+const OUTPUT_RULES = `
+CRITICAL OUTPUT RULES — follow these exactly:
+- Write ONLY spoken words. Nothing else.
+- NO asterisks, no stage directions, no action descriptions like *smiles* or *nods*
+- NO emoji of any kind
+- NO parentheses with English translations or explanations
+- NO markdown formatting of any kind — no bold, no italics, no bullet points
+- Your response will be read aloud by a text-to-speech engine. Write exactly what should be spoken and nothing else.
+- If you need to include a hint, speak it naturally as part of the sentence in the target language only`
 
 function buildSystemPrompt(params: {
   language: Language
@@ -36,47 +46,54 @@ function buildSystemPrompt(params: {
   topic?: string
 }): string {
   const { language, region, cefrLevel, mode, scenario, topic } = params
+  const langName = language === "spanish" ? "Spanish" : "French"
   const dialect = DIALECT_MAP[region]
   const cefrGuide = CEFR_INSTRUCTIONS[cefrLevel]
 
   if (mode === "lesson" && scenario) {
     const role = SCENARIO_ROLES[scenario]
-    return `You are an AI language tutor helping an English speaker learn ${language === "spanish" ? "Spanish" : "French"}.
+    return `You are roleplaying as a character in a ${langName} language lesson for an English-speaking learner.
 
+YOUR CHARACTER: ${role}
 DIALECT: ${dialect}
-
-YOUR ROLE IN THIS LESSON: ${role}
-
 LEARNER LEVEL: ${cefrGuide}
 
-RULES:
-- Respond ONLY in ${language === "spanish" ? "Spanish" : "French"} unless the learner is completely stuck
-- Stay in your character role throughout the scenario
-- Keep responses SHORT (1-3 sentences) so the learner gets to practice more
-- Do NOT correct errors mid-conversation — save corrections for after
-- If the learner uses English, gently encourage them in the target language: "(Try saying that in ${language === "spanish" ? "Spanish" : "French"}!)"
-- Be warm, patient, and encouraging
-- If the learner struggles, give them a hint phrase in parentheses
-- Adapt complexity to the CEFR level above`
+CONVERSATION RULES:
+- Speak ONLY in ${langName} — never switch to English
+- Stay fully in character throughout the scenario
+- Keep each reply to 1 to 3 sentences maximum so the learner can respond often
+- If the learner says something in English, respond in ${langName} and model the phrase they needed
+- Do not correct mistakes mid-conversation — just continue naturally
+- Be warm, patient, and encouraging through your tone alone
+- If the learner seems stuck, give a very short natural hint embedded in your reply in ${langName}
+${OUTPUT_RULES}`
   }
 
-  // Speaking / freeform mode
-  return `You are a friendly AI conversation partner helping an English speaker practice ${language === "spanish" ? "Spanish" : "French"}.
+  return `You are a friendly native ${langName} speaker having a real conversation with an English-speaking learner.
 
 DIALECT: ${dialect}
-
 LEARNER LEVEL: ${cefrGuide}
+TOPIC: ${topic || "open conversation"}
 
-TOPIC: ${topic || "Open conversation"}
+CONVERSATION RULES:
+- Speak ONLY in ${langName} — never switch to English
+- Keep each reply to 2 to 4 sentences maximum — this is a conversation, not a lesson
+- End every reply with a natural follow-up question to keep the conversation flowing
+- If the learner uses English, respond in ${langName} and naturally model the phrase they needed
+- Do not correct grammar mid-conversation — just continue naturally and model correct usage
+- Be genuinely warm, curious, and interested in what the learner says
+${OUTPUT_RULES}`
+}
 
-RULES:
-- Respond ONLY in ${language === "spanish" ? "Spanish" : "French"} unless the learner is completely lost
-- Keep responses SHORT (2-4 sentences) — this is a conversation, not a lecture
-- Ask a follow-up question at the end of each response to keep the conversation going
-- Do NOT correct grammar mid-conversation — just model correct usage naturally
-- If the learner uses English, gently encourage them: "(Try that in ${language === "spanish" ? "Spanish" : "French"}!)"
-- Be warm, encouraging, and genuinely interested
-- Adapt complexity to the CEFR level above`
+// Strip any markdown/artifacts that slip through before streaming
+function sanitizeForSpeech(text: string): string {
+  return text
+    .replace(/\*[^*]*\*/g, "")         // remove *stage directions* or *bold*
+    .replace(/\([^)]*[A-Z][^)]*\)/g, "") // remove (English translations) — caps = English
+    .replace(/\p{Emoji}/gu, "")          // remove emoji
+    .replace(/[*_`#~]/g, "")             // remove leftover markdown chars
+    .replace(/\s{2,}/g, " ")             // collapse extra spaces
+    .trim()
 }
 
 export async function POST(request: Request) {
@@ -109,18 +126,21 @@ export async function POST(request: Request) {
       messages,
     })
 
-    // Stream the response back as plain text
+    // Collect full text, sanitize, then stream clean output
     const encoder = new TextEncoder()
     const readable = new ReadableStream({
       async start(controller) {
+        let buffer = ""
         for await (const chunk of stream) {
           if (
             chunk.type === "content_block_delta" &&
             chunk.delta.type === "text_delta"
           ) {
-            controller.enqueue(encoder.encode(chunk.delta.text))
+            buffer += chunk.delta.text
           }
         }
+        const clean = sanitizeForSpeech(buffer)
+        controller.enqueue(encoder.encode(clean))
         controller.close()
       },
     })
