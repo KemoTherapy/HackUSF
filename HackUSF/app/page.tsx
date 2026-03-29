@@ -20,10 +20,11 @@ export default function HomePage() {
         {/* Hero section */}
         <div className="w-full text-center mb-12 flex flex-col items-center justify-center">
           <h2 className="text-4xl md:text-6xl font-extrabold text-foreground mb-4 text-balance">
-            Speak it. Learn it. Live it.
+            Practice the conversations that matter most.
           </h2>
-          <p className="text-lg md:text-xl text-muted max-w-xl">
-            Practice Spanish or French with AI-powered lessons and real conversations.
+          <p className="text-lg md:text-xl text-muted max-w-2xl">
+            Language barriers isolate people every day — at the doctor, at work, in a new country.
+            Lingua lets you practice real conversations with AI before the stakes are real.
           </p>
         </div>
 
@@ -46,7 +47,7 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-foreground text-center">Learn</h3>
               </div>
               <p className="text-muted leading-relaxed">
-                Structured lessons with guided scenarios and CEFR level tracking. Perfect for building a solid foundation.
+                Role-play real situations — a doctor's visit, a job interview, checking into a hotel — at your own pace, with an AI that adapts to your level.
               </p>
             </div>
             <div className="mt-6 flex justify-center">
@@ -70,7 +71,7 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-foreground text-center">Practice</h3>
               </div>
               <p className="text-muted leading-relaxed text-center">
-                Speaking and writing exercises. Choose your difficulty and dive in for free-form practice.
+                Free-form conversation on any topic, at your level. No judgment, no pressure — just talk and get real feedback.
               </p>
             </div>
             <div className="mt-6 flex justify-center">
@@ -114,7 +115,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="py-6 text-center">
         <p className="text-sm text-muted">
-          Guest mode &middot; No account needed &middot; Progress saved in your browser
+          No account needed &middot; Progress saved in your browser &middot; Built for real people in real situations
         </p>
       </footer>
     </div>

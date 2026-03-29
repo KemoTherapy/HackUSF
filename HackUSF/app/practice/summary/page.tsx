@@ -126,21 +126,62 @@ function SummaryContent() {
 
         {/* Writing summary */}
         {mode === "writing" && (
-          <div className="bg-card rounded-2xl p-6">
-            <h3 className="font-semibold text-foreground mb-4">Session Summary</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-border">
-                <span className="text-muted">Exercises Completed</span>
-                <span className="text-foreground font-medium">5</span>
+          <div className="space-y-6">
+            {/* Score visual */}
+            <div className="bg-card rounded-2xl p-6 text-center">
+              <div className="relative inline-flex items-center justify-center w-32 h-32 mb-4">
+                <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" strokeWidth="8" className="text-border" />
+                  <circle
+                    cx="60" cy="60" r="50" fill="none" stroke="currentColor" strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 50}`}
+                    strokeDashoffset={`${2 * Math.PI * 50 * (1 - score / 100)}`}
+                    className={score >= 80 ? "text-success" : score >= 60 ? "text-primary" : "text-secondary"}
+                  />
+                </svg>
+                <span className="absolute text-2xl font-bold text-foreground">{score}%</span>
               </div>
-              <div className="flex items-center justify-between py-3 border-b border-border">
-                <span className="text-muted">Correct Answers</span>
-                <span className="text-success font-medium">{Math.round((score / 100) * 5)}</span>
+              <p className="text-lg font-semibold text-foreground mb-1">
+                {score >= 80 ? "Excellent work!" : score >= 60 ? "Good progress!" : "Keep practicing!"}
+              </p>
+              <p className="text-sm text-muted">
+                {score >= 80
+                  ? "You have a strong grasp of reading and writing at this level."
+                  : score >= 60
+                  ? "You are building solid comprehension skills. A few more sessions will sharpen this."
+                  : "Every attempt builds understanding. Try this session again to see your improvement."}
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="bg-card rounded-2xl p-6">
+              <h3 className="font-semibold text-foreground mb-4">Session Breakdown</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-border">
+                  <span className="text-muted">Exercises Completed</span>
+                  <span className="text-foreground font-medium">5</span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-border">
+                  <span className="text-muted">Correct Answers</span>
+                  <span className="text-success font-medium">{Math.round((score / 100) * 5)} / 5</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-muted">Accuracy</span>
+                  <span className="text-foreground font-medium">{score}%</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-muted">Accuracy</span>
-                <span className="text-foreground font-medium">{score}%</span>
-              </div>
+            </div>
+
+            {/* Next steps */}
+            <div className="bg-card rounded-2xl p-6">
+              <h3 className="font-semibold text-foreground mb-3">What to do next</h3>
+              <ul className="space-y-2 text-sm text-muted">
+                {score < 60 && <li className="flex gap-2"><span className="text-primary">→</span> Repeat this writing session to reinforce comprehension at this level</li>}
+                {score >= 60 && <li className="flex gap-2"><span className="text-primary">→</span> Try a speaking session — reading and speaking reinforce each other</li>}
+                {score >= 80 && <li className="flex gap-2"><span className="text-primary">→</span> Challenge yourself by moving up a difficulty level</li>}
+                <li className="flex gap-2"><span className="text-primary">→</span> Practice the lesson scenarios to use this vocabulary in real conversations</li>
+              </ul>
             </div>
           </div>
         )}
