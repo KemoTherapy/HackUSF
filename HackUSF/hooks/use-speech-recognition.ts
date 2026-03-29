@@ -14,7 +14,7 @@ const LANG_CODE: Record<string, string> = {
 interface UseSpeechRecognitionOptions {
   language: Language
   region: string
-  onResult: (transcript: string) => void
+  onResult: (transcript: string, avgConfidence: number) => void
   onError?: (error: string) => void
   silenceMs?: number // auto-stop after this many ms of silence (default 2000)
 }
@@ -38,6 +38,7 @@ export function useSpeechRecognition({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const transcriptRef = useRef("")
+  const confidenceRef = useRef<number[]>([])
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Keep callbacks in refs so onend always has the latest version
@@ -74,6 +75,7 @@ export function useSpeechRecognition({
     recognition.interimResults = false
 
     transcriptRef.current = ""
+    confidenceRef.current = []
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
@@ -81,6 +83,7 @@ export function useSpeechRecognition({
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           newTranscript += event.results[i][0].transcript + " "
+          confidenceRef.current.push(event.results[i][0].confidence ?? 1)
         }
       }
       if (newTranscript.trim()) {
@@ -111,9 +114,12 @@ export function useSpeechRecognition({
       recognitionRef.current = null
       setIsRecording(false)
       const result = transcriptRef.current.trim()
+      const scores = confidenceRef.current
+      const avgConfidence = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 1
       transcriptRef.current = ""
+      confidenceRef.current = []
       if (result) {
-        onResultRef.current(result)
+        onResultRef.current(result, avgConfidence)
       } else {
         // Chrome ended the session with no speech (no-speech timeout or network hiccup).
         // Restart automatically so the conversation keeps flowing.

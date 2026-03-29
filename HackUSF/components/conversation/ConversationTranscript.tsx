@@ -83,7 +83,7 @@ export function ConversationTranscript({
 
       {corrections.length > 0 && (
         <p className="text-xs text-muted mt-4 pt-4 border-t border-border">
-          <span className="underline decoration-error/70 decoration-wavy text-error/90">Underlined</span> phrases have corrections — see feedback below.
+          <span className="underline decoration-error/70 decoration-wavy text-error/90">Underlined</span> phrases have corrections. Check the feedback section below.
         </p>
       )}
     </div>

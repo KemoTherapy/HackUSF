@@ -10,8 +10,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Lingua — Practice the conversations that matter most.',
-  description: 'Practice real-life Spanish and French conversations with AI. Built for people navigating a new language in the real world.',
+  title: 'Lingua: Practice the conversations that matter most.',
+  description: 'Practice real Spanish and French conversations with AI. Built for people navigating a new language in real life.',
   icons: {
     icon: [
       {

@@ -23,8 +23,8 @@ export default function HomePage() {
             Practice the conversations that matter most.
           </h2>
           <p className="text-lg md:text-xl text-muted max-w-2xl">
-            Language barriers isolate people every day — at the doctor, at work, in a new country.
-            Lingua lets you practice real conversations with AI before the stakes are real.
+            Language barriers isolate people every day. At the doctor, at work, in a new country.
+            Lingua gives you a safe place to practice real conversations before the stakes are real.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-foreground text-center">Learn</h3>
               </div>
               <p className="text-muted leading-relaxed">
-                Role-play real situations — a doctor's visit, a job interview, checking into a hotel — at your own pace, with an AI that adapts to your level.
+                Role-play real situations like a doctor's visit, a job interview, or checking into a hotel. Go at your own pace with an AI that matches your level.
               </p>
             </div>
             <div className="mt-6 flex justify-center">
@@ -71,7 +71,7 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-foreground text-center">Practice</h3>
               </div>
               <p className="text-muted leading-relaxed text-center">
-                Free-form conversation on any topic, at your level. No judgment, no pressure — just talk and get real feedback.
+                Free conversation on any topic at your level. No judgment, no pressure. Just talk and get real feedback.
               </p>
             </div>
             <div className="mt-6 flex justify-center">
@@ -99,7 +99,7 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-foreground text-center">Resources</h3>
               </div>
               <p className="text-muted leading-relaxed">
-                Immerse yourself in the language through music, films, and cultural media. Learn naturally through content you actually enjoy.
+                Explore music, films, and podcasts in Spanish or French. Pick content you would actually enjoy and learn as you go.
               </p>
             </div>
             <div className="mt-6 flex justify-center">

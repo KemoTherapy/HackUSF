@@ -109,7 +109,7 @@ function SpeakingContent() {
     }
   }
 
-  async function handleSpeechResult(transcript: string) {
+  async function handleSpeechResult(transcript: string, confidence = 1) {
     if (!transcript || isEnding) return
     setSpeechError(null)
     setOrbState("thinking")
@@ -120,6 +120,7 @@ function SpeakingContent() {
       speaker: "user",
       text: transcript,
       timestamp: new Date().toISOString(),
+      confidence,
     }
     setTurns((prev) => [...prev, userTurn])
     conversationHistory.current.push({ role: "user", content: transcript })
@@ -262,8 +263,8 @@ function SpeakingContent() {
           disabled={orbState === "thinking" || orbState === "speaking" || isEnding}
         />
         <p className="text-xs text-disabled">
-          {orbState === "listening" ? "Listening · pause 4 seconds to send"
-            : orbState === "idle" && !isRecording ? "Tap mic to speak"
+          {orbState === "listening" ? "Listening... stop talking to send"
+            : orbState === "idle" && !isRecording ? "Tap the mic to speak"
             : ""}
         </p>
       </footer>
