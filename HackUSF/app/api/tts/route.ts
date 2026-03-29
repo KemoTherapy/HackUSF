@@ -6,20 +6,20 @@ import { promisify } from "util"
 
 const execFileAsync = promisify(execFile)
 
-// macOS Enhanced voices — installed via System Settings → Accessibility → Spoken Content
+// macOS voices — one distinct voice per region for accent differentiation
 const VOICE_MAP: Record<string, string> = {
-  mexico:        "Mónica",
-  spain:         "Mónica",
-  latin_america: "Mónica",
-  france:        "Amélie",
-  quebec:        "Amélie",
+  mexico:        "Paulina",                  // es_MX — Mexican Spanish (female)
+  spain:         "Mónica",                   // es_ES — Castilian Spanish (female)
+  latin_america: "Reed (Spanish (Mexico))",  // es_MX — neutral Latin American (male)
+  france:        "Thomas",                   // fr_FR — Parisian French (male)
+  quebec:        "Amélie",                   // fr_CA — Québécois French (female)
 }
 
 const FALLBACK_VOICE: Record<string, string> = {
-  mexico:        "Mónica",
+  mexico:        "Paulina",
   spain:         "Mónica",
-  latin_america: "Mónica",
-  france:        "Amélie",
+  latin_america: "Paulina",
+  france:        "Thomas",
   quebec:        "Amélie",
 }
 

@@ -22,7 +22,7 @@ export async function startLesson(params: {
 
   // Build the opening AI message via the chat API
   const openingPrompt = getOpeningPrompt(language, scenario)
-  const aiMessage = await streamChatMessage({
+  const { text: aiMessage } = await streamChatMessage({
     messages: [{ role: "user", content: openingPrompt }],
     language,
     region,
@@ -51,10 +51,10 @@ export async function sendMessage(params: {
   scenario?: Scenario
   topic?: string
   onChunk?: (chunk: string) => void
-}): Promise<{ aiReply: string }> {
+}): Promise<{ aiReply: string; lessonComplete: boolean }> {
   const { messages, language, region, cefrLevel, mode, scenario, topic, onChunk } = params
 
-  const aiReply = await streamChatMessage({
+  const { text, lessonComplete } = await streamChatMessage({
     messages,
     language,
     region,
@@ -65,7 +65,7 @@ export async function sendMessage(params: {
     onChunk,
   })
 
-  return { aiReply }
+  return { aiReply: text, lessonComplete }
 }
 
 async function streamChatMessage(params: {
@@ -77,7 +77,7 @@ async function streamChatMessage(params: {
   scenario?: Scenario
   topic?: string
   onChunk?: (chunk: string) => void
-}): Promise<string> {
+}): Promise<{ text: string; lessonComplete: boolean }> {
   const { messages, language, region, cefrLevel, mode, scenario, topic, onChunk } = params
 
   const response = await fetch("/api/chat", {
@@ -88,6 +88,8 @@ async function streamChatMessage(params: {
 
   if (!response.ok) throw new Error("Chat API failed")
   if (!response.body) throw new Error("No response body")
+
+  const lessonComplete = response.headers.get("X-Lesson-Complete") === "true"
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
@@ -101,7 +103,7 @@ async function streamChatMessage(params: {
     onChunk?.(chunk)
   }
 
-  return fullText
+  return { text: fullText, lessonComplete }
 }
 
 // ─── End of session analysis ─────────────────────────────────────────────────

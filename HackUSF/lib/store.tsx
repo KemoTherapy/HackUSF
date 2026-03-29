@@ -57,7 +57,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSession((prev) => ({ ...prev, currentLevel: level }))
   }, [])
 
-  const addPracticeSession = useCallback((practiceSession: PracticeSession) => {
   const setVoice = useCallback((voice: string) => {
     setSession((prev) => ({ ...prev, voice }))
   }, [])

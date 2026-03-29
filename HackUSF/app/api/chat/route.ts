@@ -12,12 +12,12 @@ const DIALECT_MAP: Record<Region, string> = {
 }
 
 const CEFR_INSTRUCTIONS: Record<CefrLevel, string> = {
-  A1: "ABSOLUTE BEGINNER. Short simple sentences. Present tense only. Use only the most basic 200 words — greetings, numbers, food, colors, yes/no. ONE question per reply maximum. Speak naturally but very simply. Be warm and encouraging.",
-  A2: "ELEMENTARY. Short sentences. Present and simple past tense. Common everyday vocabulary. One question per reply.",
-  B1: "INTERMEDIATE. Natural clear sentences. Mix tenses. Slightly broader vocabulary. Encourage the learner to give longer answers.",
-  B2: "UPPER INTERMEDIATE. Speak naturally. Occasional idioms. Richer vocabulary. Expect and model complex sentences.",
-  C1: "ADVANCED. Fully natural speech. Rich vocabulary, idioms, complex structures. Push for nuanced expression.",
-  C2: "MASTERY. Speak exactly as a native speaker. Use all idioms, cultural references, literary vocabulary.",
+  A1: "ABSOLUTE BEGINNER. Use only the most basic 200 words — greetings, numbers, food, colors, yes/no. Present tense ONLY — no past, no future, no conditional. One very short sentence per idea. Ask ONE simple yes/no question maximum per reply. Volunteer help freely: if the learner seems confused, say the phrase they need. Be warm, slow, and very patient.",
+  A2: "ELEMENTARY. Short clear sentences. Present tense and simple past (preterite) only. Stick to common everyday vocabulary for shopping, ordering, and asking for help. Ask one simple question per reply. Still volunteer hints if the learner struggles — model the phrase naturally within your reply.",
+  B1: "INTERMEDIATE. Natural sentences mixing present, past, and simple future. Use a broader everyday vocabulary. Ask open questions that require more than yes/no. Expect the learner to form short paragraphs. Only hint if the learner is clearly stuck — otherwise let them work through it.",
+  B2: "UPPER INTERMEDIATE. Speak naturally and at a normal conversational pace. Use idiomatic expressions, relative clauses, and richer vocabulary. Expect detailed and somewhat complex responses. Do NOT offer hints — treat the learner as capable. Push for nuance with follow-up questions.",
+  C1: "ADVANCED. Fully natural speech with rich vocabulary, idioms, subjunctive, and complex structures. Reference cultural nuances when appropriate. Expect the learner to match your register. Never simplify. Challenge the learner to express subtle meaning.",
+  C2: "MASTERY. Speak exactly as a native speaker — use slang, humor, proverbs, and cultural references freely. Use all tenses and moods without restriction. Expect near-native fluency. Hold the learner to native-speaker standards.",
 }
 
 const SCENARIO_ROLES: Record<Scenario, string> = {
@@ -25,6 +25,13 @@ const SCENARIO_ROLES: Record<Scenario, string> = {
   directions:  "You are a helpful local person on the street giving directions.",
   coffee_shop: "You are a barista working at a coffee shop.",
   hotel:       "You are a professional hotel receptionist at the front desk.",
+}
+
+const SCENARIO_COMPLETION_GOALS: Record<Scenario, string> = {
+  restaurant:  "The lesson is complete when the learner has ordered food or drink, you have confirmed the order, and the bill has been requested or provided.",
+  directions:  "The lesson is complete when the learner has asked for and received clear directions to a destination and said goodbye.",
+  coffee_shop: "The lesson is complete when the learner has ordered a drink, any customizations have been handled, and the order has been placed.",
+  hotel:       "The lesson is complete when the learner has checked in, received their room number or key information, and the check-in exchange has wrapped up.",
 }
 
 const OUTPUT_RULES = `
@@ -52,11 +59,14 @@ function buildSystemPrompt(params: {
 
   if (mode === "lesson" && scenario) {
     const role = SCENARIO_ROLES[scenario]
+    const completionGoal = SCENARIO_COMPLETION_GOALS[scenario]
     return `You are roleplaying as a character in a ${langName} language lesson for an English-speaking learner.
 
 YOUR CHARACTER: ${role}
 DIALECT: ${dialect}
 LEARNER LEVEL: ${cefrGuide}
+
+LESSON GOAL: ${completionGoal}
 
 CONVERSATION RULES:
 - Speak ONLY in ${langName} — never switch to English
@@ -66,6 +76,11 @@ CONVERSATION RULES:
 - Do not correct mistakes mid-conversation — just continue naturally
 - Be warm, patient, and encouraging through your tone alone
 - If the learner seems stuck, give a very short natural hint embedded in your reply in ${langName}
+
+ENDING THE LESSON:
+- When the lesson goal above has been achieved, give a natural in-character farewell (e.g. "Hasta luego, que tenga buen día" or "Bonne journée, au revoir")
+- Immediately after that farewell and nothing else, append the exact text: [LESSON_COMPLETE]
+- Only append [LESSON_COMPLETE] once the scenario goal is genuinely complete — not just after a polite exchange
 ${OUTPUT_RULES}`
   }
 
@@ -120,35 +135,31 @@ export async function POST(request: Request) {
 
     const systemPrompt = buildSystemPrompt({ language, region, cefrLevel, mode, scenario, topic })
 
-    const stream = await client.messages.stream({
+    const stream = client.messages.stream({
       model: "claude-sonnet-4-6",
       max_tokens: 300,
       system: systemPrompt,
       messages,
     })
 
-    // Collect full text, sanitize, then stream clean output
-    const encoder = new TextEncoder()
-    const readable = new ReadableStream({
-      async start(controller) {
-        let buffer = ""
-        for await (const chunk of stream) {
-          if (
-            chunk.type === "content_block_delta" &&
-            chunk.delta.type === "text_delta"
-          ) {
-            buffer += chunk.delta.text
-          }
-        }
-        const clean = sanitizeForSpeech(buffer)
-        controller.enqueue(encoder.encode(clean))
-        controller.close()
-      },
-    })
+    // Collect full text, detect lesson completion marker, then return clean output
+    let buffer = ""
+    for await (const chunk of stream) {
+      if (
+        chunk.type === "content_block_delta" &&
+        chunk.delta.type === "text_delta"
+      ) {
+        buffer += chunk.delta.text
+      }
+    }
 
-    return new Response(readable, {
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    })
+    const lessonComplete = buffer.includes("[LESSON_COMPLETE]")
+    const clean = sanitizeForSpeech(buffer.replace("[LESSON_COMPLETE]", ""))
+
+    const headers: Record<string, string> = { "Content-Type": "text/plain; charset=utf-8" }
+    if (lessonComplete) headers["X-Lesson-Complete"] = "true"
+
+    return new Response(clean, { headers })
   } catch (error) {
     console.error("Chat API error:", error)
     return Response.json({ error: "Failed to get response" }, { status: 500 })

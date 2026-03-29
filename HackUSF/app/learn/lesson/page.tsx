@@ -149,11 +149,16 @@ function LessonContent() {
       setTurns((prev) => [...prev, aiTurn])
 
       setOrbState("speaking")
-      fetchSuggestions()
-      speak(result.aiReply, () => {
-        setOrbState("idle")
-        setTimeout(() => { startRecording(); startSuggestionTimer() }, 600)
-      })
+      if (result.lessonComplete) {
+        // AI has signalled the scenario is done — end after the farewell finishes speaking
+        speak(result.aiReply, () => handleEndLesson())
+      } else {
+        fetchSuggestions()
+        speak(result.aiReply, () => {
+          setOrbState("idle")
+          setTimeout(() => { startRecording(); startSuggestionTimer() }, 600)
+        })
+      }
     } catch (err) {
       console.error("Failed to send message:", err)
       setOrbState("idle")
